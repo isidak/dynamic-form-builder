@@ -1,0 +1,11 @@
+<ng-container *ngIf="controlConfig.type === 'submit'; else control">
+<button class="btn btn-outline-primary">{{controlConfig.type | titlecase}}</button>
+</ng-container>
+
+<ng-template #control></ng-template>
+<div class="form-group" [formGroup]="formGroup">
+    <div class="form-control">
+        <label></label>
+        <input [type]="controlConfig.type" [formControlName]="controlConfig.name" class="form-control" [placeholder]="controlConfig.placeholder">
+    </div>
+</div>
