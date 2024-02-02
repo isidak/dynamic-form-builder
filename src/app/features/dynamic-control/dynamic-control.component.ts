@@ -1,5 +1,5 @@
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from './control-config';
 
@@ -10,6 +10,8 @@ import { ControlConfig } from './control-config';
   templateUrl: './dynamic-control.component.html',
 })
 export class DynamicControlComponent {
+  @Output() formSubmit = new EventEmitter();
  controlConfig: ControlConfig;
  formGroup: FormGroup;
+
 }

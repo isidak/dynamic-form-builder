@@ -1,16 +1,15 @@
 import {
   Component,
-  ComponentFactoryResolver,
+  EventEmitter,
   Input,
   OnChanges,
-  SimpleChange,
+  Output,
   SimpleChanges,
   ViewChild,
   ViewContainerRef,
-  inject,
 } from '@angular/core';
-import { ControlConfig } from '../dynamic-control/control-config';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ControlConfig } from '../dynamic-control/control-config';
 import { DynamicControlComponent } from '../dynamic-control/dynamic-control.component';
 
 @Component({
@@ -20,31 +19,44 @@ import { DynamicControlComponent } from '../dynamic-control/dynamic-control.comp
   templateUrl: './form-renderer.component.html',
 })
 export class FormRendererComponent implements OnChanges {
+  form = new FormGroup({});
+
   @Input() controlConfigs: ControlConfig[];
+  @Output() formSubmit = new EventEmitter();
   @ViewChild('dynamicControl', { read: ViewContainerRef })
   dynamicControl: ViewContainerRef;
 
-  form = new FormGroup({});
-
   ngOnChanges(changes: SimpleChanges) {
-    if(changes['controlConfigs'].currentValue !== changes['controlConfigs'].previousValue || changes['controlConfigs'].isFirstChange()) {
-      this.form = new FormGroup({});
-      this.createComponents();
+    if(changes['controlConfigs'].isFirstChange()){
+      this.createControls();
+    } else if (
+      changes['controlConfigs'].currentValue !==
+        changes['controlConfigs'].previousValue 
+      
+    ) {
+      this.dynamicControl.clear();
+      this.createControls();
     }
-   
   }
 
-  private createComponents() {
-    if(this.controlConfigs.length > 0) {
+  private createControls() {
+    if (this.controlConfigs.length > 0) {
 
-      this.controlConfigs.forEach( controlConfig => {
+      this.controlConfigs.forEach((controlConfig) => {
+        if (controlConfig.type !== 'submit') {
+          this.form.addControl(controlConfig.name, new FormControl());
+        }
 
-        this.form.addControl(controlConfig.name, new FormControl());
-        
-       const control = this.dynamicControl.createComponent(DynamicControlComponent);
-        control.instance.controlConfig = controlConfig;
-        control.instance.formGroup = this.form;
-      })
+        this.createComponent(controlConfig);
+      });
     }
-}
+  }
+
+  private createComponent(controlConfig: ControlConfig) {
+    const control = this.dynamicControl.createComponent(
+      DynamicControlComponent
+    );
+    control.instance.controlConfig = controlConfig;
+    control.instance.formGroup = this.form;
+  }
 }

@@ -1,11 +1,19 @@
 <ng-container *ngIf="controlConfig.type === 'submit'; else control">
-<button class="btn btn-outline-primary">{{controlConfig.type | titlecase}}</button>
+  <!-- <div class="row justify-content-center"> -->
+  <button class="btn btn-outline-primary mt-2 mx-auto d-block">Submit</button>
+  <!-- </div> -->
 </ng-container>
 
-<ng-template #control></ng-template>
-<div class="form-group" [formGroup]="formGroup">
-    <div class="form-control">
-        <label></label>
-        <input [type]="controlConfig.type" [formControlName]="controlConfig.name" class="form-control" [placeholder]="controlConfig.placeholder">
+<ng-template #control>
+  <div class="form-group" [formGroup]="formGroup">
+    <div class="form-control mt-2">
+      <label class="p-2">{{ controlConfig.label | titlecase }}</label>
+      <input
+        [type]="controlConfig.type"
+        [formControlName]="controlConfig.name"
+        class="form-control"
+        [placeholder]="controlConfig.placeholder"
+      />
     </div>
-</div>
+  </div>
+</ng-template>
