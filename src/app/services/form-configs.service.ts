@@ -13,6 +13,12 @@ export class FormConfigsService {
     this._formConfigs.next([...this._formConfigs.getValue(), value]);
   }
 
+  updateForm(value: ControlConfig[]) {
+    const formConfigs = this._formConfigs.getValue();
+    this._formConfigs.next(value);
+  }
+
+
   submitForm(value: any) {
     console.log(value);
   }

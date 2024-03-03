@@ -1,12 +1,14 @@
 <ng-container *ngIf="controlConfig.type === 'submit'; else control">
   <!-- <div class="row justify-content-center"> -->
-  <button class="btn btn-outline-primary mt-2 mx-auto d-block">Submit</button>
+  <button class="btn btn-outline-primary mt-2 mx-auto d-block" cdkDrag>
+    Submit
+  </button>
   <!-- </div> -->
 </ng-container>
 
 <ng-template #control>
   <div class="form-group" [formGroup]="formGroup">
-    <div class="form-control mt-2">
+    <div class="form-control mt-2" cdkDrag>
       <label class="p-2">{{ controlConfig.label | titlecase }}</label>
       <input
         [type]="controlConfig.type"
@@ -14,6 +16,7 @@
         class="form-control"
         [placeholder]="controlConfig.placeholder"
       />
+      <button class="btn btn-secondary" (click)="selectControl()">Edit</button>
     </div>
   </div>
 </ng-template>

@@ -1,25 +1,85 @@
 <div class="container-fluid">
-  <h1>Dynamic form renderer</h1>
-  <div class="row">
-    <div class="col">
+  <div class="row justify-content-center">
+    <div class="col-auto">
+      <h1>Dynamic form renderer</h1>
+    </div>
+  </div>
+
+  <div class="row mt-auto">
+    <div class="col-lg-4 mt-auto" cdkDrag>
       <app-card title="FormControls Generator">
         <app-editor (formValue)="addForm($event)"></app-editor>
       </app-card>
     </div>
 
     <ng-container *ngIf="formConfigs$ | async as formConfigs">
-      <div class="col">
+      <div class="col-lg-4 mt-3">
         <app-card title="Generated Code">
           {{ formConfigs | json }}
         </app-card>
       </div>
 
-      <div class="col">
+      <div
+        class="col-lg-4 mt-3"
+        cdkDropList
+        (cdkDropListDropped)="drop($event, formConfigs)"
+      >
         <app-form-renderer
           [controlConfigs]="formConfigs"
           (formSubmit)="submitForm($event)"
+          (editControl)="editControl($event)"
         ></app-form-renderer>
       </div>
     </ng-container>
+  </div>
+  <div class="row mt-auto">
+    <div class="col-lg-4 mt-auto" cdkDrag>
+      <app-card title="FormControls Editor">
+        <app-editor
+          *ngIf="selectedControl$ | async as selectedControl"
+          (formValue)="addForm($event)"
+          [selectedControl]="selectedControl"
+        ></app-editor>
+      </app-card>
+    </div>
+    <div>
+      <div
+        cdkDrag
+        class="rectangle"
+        mwlResizable
+        [enableGhostResize]="true"
+        (resizeEnd)="onResizeEnd($event)"
+        [ngStyle]="style"
+      >
+        <div class="example-handle" cdkDragHandle>
+          <svg width="24px" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"
+            ></path>
+            <path d="M0 0h24v24H0z" fill="none"></path>
+          </svg>
+        </div>
+        <div
+          class="resize-handle-top"
+          mwlResizeHandle
+          [resizeEdges]="{ top: true }"
+        ></div>
+        <div
+          class="resize-handle-left"
+          mwlResizeHandle
+          [resizeEdges]="{ left: true }"
+        ></div>
+        <div
+          class="resize-handle-right"
+          mwlResizeHandle
+          [resizeEdges]="{ right: true }"
+        ></div>
+        <div
+          class="resize-handle-bottom"
+          mwlResizeHandle
+          [resizeEdges]="{ bottom: true }"
+        ></div>
+      </div>
+    </div>
   </div>
 </div>

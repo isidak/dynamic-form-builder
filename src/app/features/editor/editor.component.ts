@@ -3,6 +3,7 @@ import {
   Component,
   DestroyRef,
   EventEmitter,
+  Input,
   OnInit,
   Output,
   inject,
@@ -19,6 +20,7 @@ import {
 } from '@angular/forms';
 import { Observable, map, take } from 'rxjs';
 import { FormConfigsService } from '../../services/form-configs.service';
+import { ControlConfig } from '../dynamic-control/control-config';
 
 @Component({
   selector: 'app-editor',
@@ -27,6 +29,9 @@ import { FormConfigsService } from '../../services/form-configs.service';
   templateUrl: './editor.component.html',
 })
 export class EditorComponent implements OnInit {
+  @Input() set selectedControl(value: ControlConfig) {
+    this.patchForm(value!);
+  }
   @Output() formValue = new EventEmitter();
   editorForm: FormGroup;
   fb = inject(FormBuilder);
@@ -53,6 +58,10 @@ export class EditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.formTypeChangeSub();
+  }
+
+  patchForm(control: ControlConfig) {
+    this.editorForm.patchValue(control);
   }
 
   formTypeChangeSub() {
@@ -107,8 +116,8 @@ export class EditorComponent implements OnInit {
         map((configs) => {
           const isNameExists = configs.some((config) => config.name === value);
           return isNameExists ? { nameExists: true } : null;
-        }));
-     
+        })
+      );
     };
   }
 }
