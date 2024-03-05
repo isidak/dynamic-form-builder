@@ -18,24 +18,30 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Observable, map, take } from 'rxjs';
-import { FormConfigsService } from '../../services/form-configs.service';
+import { Store } from '@ngrx/store';
+import { Observable, map, of, take } from 'rxjs';
+import { controlsFeature } from '../../store/controls.state';
 import { ControlConfig } from '../dynamic-control/control-config';
+import { CardComponent } from "../../shared/card/card.component";
 
 @Component({
-  selector: 'app-editor',
-  standalone: true,
-  imports: [ReactiveFormsModule, NgIf, NgClass, JsonPipe],
-  templateUrl: './editor.component.html',
+    selector: 'app-editor',
+    standalone: true,
+    templateUrl: './editor.component.html',
+    imports: [ReactiveFormsModule, NgIf, NgClass, JsonPipe, CardComponent]
 })
 export class EditorComponent implements OnInit {
-  @Input() set selectedControl(value: ControlConfig) {
+  @Input() set selectedControl(value: ControlConfig | null) {
+    if(value === null) return;
+    this.isEditMode = true;
     this.patchForm(value!);
   }
   @Output() formValue = new EventEmitter();
+  isEditMode = false;
   editorForm: FormGroup;
+  store = inject(Store);
   fb = inject(FormBuilder);
-  formConfigService = inject(FormConfigsService);
+  
   isSubmit = false;
   get type() {
     return this.editorForm.get('type');
@@ -89,6 +95,7 @@ export class EditorComponent implements OnInit {
 
   createForm(): FormGroup<any> {
     return this.fb.group({
+      id: [''],
       name: [
         '',
         [Validators.required, Validators.minLength(3)],
@@ -102,16 +109,18 @@ export class EditorComponent implements OnInit {
 
   handleSubmit() {
     if (this.editorForm.valid) {
-      this.formValue.emit(this.editorForm.value);
+      this.formValue.emit({formValue: this.editorForm.value, isEdit: this.isEditMode});
       this.editorForm.reset();
+      this.isEditMode = false;
     }
   }
 
   private isValidName(): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
       const value = control.value;
+      if(this.isEditMode) return of(null);
 
-      return this.formConfigService.formConfigs$.pipe(
+      return this.store.select(controlsFeature.selectControls).pipe(
         take(1),
         map((configs) => {
           const isNameExists = configs.some((config) => config.name === value);

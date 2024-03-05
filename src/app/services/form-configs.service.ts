@@ -1,23 +1,48 @@
 import { Injectable } from '@angular/core';
 import { ControlConfig } from '../features/dynamic-control/control-config';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, delay, from, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FormConfigsService {
-  private _formConfigs = new BehaviorSubject<ControlConfig[]>([]);
-  formConfigs$ = this._formConfigs.asObservable();
+  private configs: ControlConfig[] = [
+    {
+      id: '1',
+      name: 'first_name',
+      label: 'First Name',
+      type: 'text',
+      placeholder: 'Enter your first name',
+    },
+    {
+      id: '2',
+      name: 'last_name',
+      label: 'Last Name',
+      type: 'text',
+      placeholder: 'Enter your last name',
+    },
+    {
+      id: '3',
+      name: 'email',
+      label: 'Email',
+      type: 'text',
+      placeholder: 'Enter your email',
+    },
+    {
+      id: '4',
+      name: 'phone',
+      label: 'Phone',
+      type: 'number',
 
-  addForm(value: any) {
-    this._formConfigs.next([...this._formConfigs.getValue(), value]);
+      placeholder: 'Enter your phone number',
+    },
+  ];
+
+  getControlConfigs(): Observable<ControlConfig[]> {
+    return of(this.configs).pipe(
+      delay(1),
+    );
   }
-
-  updateForm(value: ControlConfig[]) {
-    const formConfigs = this._formConfigs.getValue();
-    this._formConfigs.next(value);
-  }
-
 
   submitForm(value: any) {
     console.log(value);

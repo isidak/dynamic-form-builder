@@ -1,13 +1,3 @@
-import { BehaviorSubject } from 'rxjs';
-import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { EditorComponent } from './features/editor/editor.component';
-import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
-import { ControlConfig } from './features/dynamic-control/control-config';
-import { CardComponent } from './shared/card/card.component';
-import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
-import { FormConfigsService } from './services/form-configs.service';
-import { ResizableModule, ResizeEvent } from 'angular-resizable-element';
 import {
   CdkDrag,
   CdkDragDrop,
@@ -15,6 +5,19 @@ import {
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
+import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { ResizableModule, ResizeEvent } from 'angular-resizable-element';
+import { ControlConfig } from './features/dynamic-control/control-config';
+import { EditorComponent } from './features/editor/editor.component';
+import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
+import { FormConfigsService } from './services/form-configs.service';
+import { CardComponent } from './shared/card/card.component';
+import { ControlsActions } from './store/controls.actions';
+import { controlsFeature } from './store/controls.state';
+import { Observable, filter, take, tap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -36,16 +39,34 @@ import {
     DragDropModule,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'dynamic-form-builder';
-  selectedControl$ = new BehaviorSubject<ControlConfig | null>(null);
+  store = inject(Store);
+  selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   style = {};
+  //  configArray: ControlConfig[] = [];
   private formConfigService = inject(FormConfigsService);
+  formConfigs$ = this.store
+    .select(controlsFeature.selectControls);
 
-  formConfigs$ = this.formConfigService.formConfigs$;
+  ngOnInit(): void {
+    this.formConfigService
+      .getControlConfigs()
+      .pipe(take(1), tap())
+      .subscribe((controls) => {
+        this.store.dispatch(ControlsActions.setControls({ controls }));
+      });
+  }
 
-  addForm(value: any) {
-    this.formConfigService.addForm(value);
+  onEditorSubmit(value: any) {
+    value.isEdit
+      ? this.saveControl(value.formValue)
+      : this.addControl(value.formValue);
+  }
+
+  addControl(control: ControlConfig) {
+    control.id = `${this.generateId()}`;
+    this.store.dispatch(ControlsActions.addControl({ control }));
   }
 
   submitForm(value: any) {
@@ -63,14 +84,45 @@ export class AppComponent {
   }
 
   drop(event: CdkDragDrop<string[]>, formConfigs: ControlConfig[]) {
-    console.log(
-      moveItemInArray(formConfigs, event.previousIndex, event.currentIndex)
-    );
-    console.log(formConfigs);
+    // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
+    // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
 
-  editControl(event: any) {
-    console.log(event);
-    this.selectedControl$.next(event);
+  editControl(event: ControlConfig) {
+    this.store.dispatch(
+      ControlsActions.selectControl({
+        controlId: event.name,
+        selectedControl: event,
+      })
+    );
+  }
+
+  removeControl(event: ControlConfig) {
+    this.store.dispatch(
+      ControlsActions.removeControl({ controlId: event.name })
+    );
+  }
+
+  saveControl(control: ControlConfig) {
+    this.store.dispatch(
+      ControlsActions.editControl({
+        controlId: control.name,
+        editedControl: control,
+      })
+    );
+  }
+
+  generateId() {
+    let newId;
+    const controls = this.store.selectSignal(controlsFeature.selectControls)();
+
+    if (controls.length === 0) return newId = 1;
+    if (controls.length > 1)
+      return (newId =
+        Math.max(...controls.map((control) => Number(control.id))) + 1);
+    return (newId =
+      (Number(
+        controls.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
+      ) ?? 0) + 1);
   }
 }

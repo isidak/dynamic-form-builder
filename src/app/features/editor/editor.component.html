@@ -1,3 +1,4 @@
+<app-card [title]="isEditMode ? 'Edit Control' : 'Generate Control'">
 <form [formGroup]="editorForm" (ngSubmit)="handleSubmit()">
   <div class="form-group">
     <label for="type">Choose control type:</label>
@@ -74,12 +75,22 @@
   </ng-container>
 
   <div class="form-group mt-2">
-    <button
+    <button *ngIf="!isEditMode; else editButton"
       type="submit"
       class="btn btn-outline-primary mx-auto d-block"
-      [disabled]="editorForm.pristine || !editorForm.valid"
+      [disabled]="!editorForm.valid"
     >
       Create form control
     </button>
+    <ng-template #editButton>
+    <button
+    type="submit"
+    class="btn btn-outline-primary mx-auto d-block"
+    [disabled]="!editorForm.valid"
+  >
+    Edit form control
+  </button>
+    </ng-template>
   </div>
 </form>
+</app-card>

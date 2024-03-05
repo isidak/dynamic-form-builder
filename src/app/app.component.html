@@ -7,9 +7,8 @@
 
   <div class="row mt-auto">
     <div class="col-lg-4 mt-auto" cdkDrag>
-      <app-card title="FormControls Generator">
-        <app-editor (formValue)="addForm($event)"></app-editor>
-      </app-card>
+        <app-editor
+        [selectedControl]="selectedControl$ | async" (formValue)="onEditorSubmit($event)"></app-editor>
     </div>
 
     <ng-container *ngIf="formConfigs$ | async as formConfigs">
@@ -19,29 +18,26 @@
         </app-card>
       </div>
 
-      <div
-        class="col-lg-4 mt-3"
-        cdkDropList
-        (cdkDropListDropped)="drop($event, formConfigs)"
-      >
+      <div class="col-lg-4 mt-3">
         <app-form-renderer
           [controlConfigs]="formConfigs"
           (formSubmit)="submitForm($event)"
           (editControl)="editControl($event)"
+          (removeControl)="removeControl($event)"
         ></app-form-renderer>
       </div>
     </ng-container>
   </div>
   <div class="row mt-auto">
-    <div class="col-lg-4 mt-auto" cdkDrag>
+    <!-- <div class="col-lg-4 mt-auto" cdkDrag>
       <app-card title="FormControls Editor">
         <app-editor
           *ngIf="selectedControl$ | async as selectedControl"
-          (formValue)="addForm($event)"
+          (formValue)="saveControl($event)"
           [selectedControl]="selectedControl"
         ></app-editor>
       </app-card>
-    </div>
+    </div> -->
     <div>
       <div
         cdkDrag

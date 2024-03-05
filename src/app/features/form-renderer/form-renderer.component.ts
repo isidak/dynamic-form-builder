@@ -1,20 +1,18 @@
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
+  AfterViewInit,
   Component,
-  DestroyRef,
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
-  ViewContainerRef,
-  inject,
+  ViewContainerRef
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from '../dynamic-control/control-config';
-import { DynamicControlComponent } from '../dynamic-control/dynamic-control.component';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-form-renderer',
@@ -22,15 +20,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   imports: [ReactiveFormsModule, DragDropModule],
   templateUrl: './form-renderer.component.html',
 })
-export class FormRendererComponent implements OnChanges {
+export class FormRendererComponent implements OnChanges, AfterViewInit {
   form = new FormGroup({});
-
   @Input() controlConfigs: ControlConfig[];
   @Output() formSubmit = new EventEmitter();
   @Output() editControl = new EventEmitter();
+  @Output() removeControl = new EventEmitter();
+
   @ViewChild('dynamicControl', { read: ViewContainerRef })
   dynamicControl: ViewContainerRef;
-  private destroyRef = inject(DestroyRef);
+
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['controlConfigs'].isFirstChange()) {
@@ -44,9 +43,16 @@ export class FormRendererComponent implements OnChanges {
     }
   }
 
+  ngAfterViewInit(): void {}
+
   private createControls() {
-    if (this.controlConfigs.length > 0) {
+    if (this.controlConfigs?.length > 0) {
       this.controlConfigs.forEach((controlConfig) => {
+        for (const key in Object.entries(this.form.controls)) {
+          if (key === controlConfig.name) {
+            return;
+          }
+        }
         if (controlConfig.type !== 'submit') {
           this.form.addControl(controlConfig.name, new FormControl());
         }
@@ -56,16 +62,26 @@ export class FormRendererComponent implements OnChanges {
     }
   }
 
-  private createComponent(controlConfig: ControlConfig) {
-    const control = this.dynamicControl.createComponent(
-      DynamicControlComponent
-    );
-    control.instance.controlConfig = controlConfig;
-    control.instance.formGroup = this.form;
-    control.instance.editControl
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((controlConfig: ControlConfig) => {
+  private async createComponent(controlConfig: ControlConfig) {
+    const component = (
+      await import('../dynamic-control/dynamic-control.component')
+    ).DynamicControlComponent;
+    const control = this.dynamicControl.createComponent(component);
+    control.setInput('controlConfig', controlConfig);
+    control.setInput('formGroup', this.form);
+    const editSub = control.instance.editControlEvent.subscribe(
+      (controlConfig: ControlConfig) => {
         this.editControl.emit(controlConfig);
-      });
+      }
+    );
+    const removeSub = control.instance.removeControlEvent.subscribe(
+      (controlConfig: ControlConfig) => {
+        this.removeControl.emit(controlConfig);
+      }
+    );
+    control.onDestroy(() => {
+      editSub.unsubscribe();
+      removeSub.unsubscribe();
+    });
   }
 }

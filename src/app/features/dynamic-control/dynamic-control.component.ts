@@ -1,5 +1,5 @@
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewContainerRef, inject } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from './control-config';
 import { CdkDrag } from '@angular/cdk/drag-drop';
@@ -12,12 +12,15 @@ import { CdkDrag } from '@angular/cdk/drag-drop';
 })
 export class DynamicControlComponent {
   @Output() formSubmit = new EventEmitter();
-  @Output() editControl = new EventEmitter();
-  controlConfig: ControlConfig;
-  formGroup: FormGroup;
+  @Output() editControlEvent = new EventEmitter();
+  @Output() removeControlEvent = new EventEmitter();
+  @Input() controlConfig: ControlConfig;
+  @Input() formGroup: FormGroup;
 
   selectControl() {
-    console.log(this.controlConfig);
-    this.editControl.emit(this.controlConfig);
+    this.editControlEvent.emit(this.controlConfig);
+  }
+  removeControl() {
+    this.removeControlEvent.emit(this.controlConfig);
   }
 }
