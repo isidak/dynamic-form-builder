@@ -1,14 +1,15 @@
+import { CdkDrag } from '@angular/cdk/drag-drop';
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ViewContainerRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from './control-config';
-import { CdkDrag } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-dynamic-control',
   standalone: true,
   imports: [ReactiveFormsModule, NgIf, TitleCasePipe, CdkDrag],
   templateUrl: './dynamic-control.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DynamicControlComponent {
   @Output() formSubmit = new EventEmitter();

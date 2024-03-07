@@ -1,5 +1,5 @@
 export interface ControlConfig {
-    id?: string;
+    id: string;
     name: string;
     label: string;
     type: string;

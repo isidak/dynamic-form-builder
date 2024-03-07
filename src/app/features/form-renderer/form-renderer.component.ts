@@ -1,11 +1,10 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
-  AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
   OnChanges,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
@@ -19,17 +18,18 @@ import { ControlConfig } from '../dynamic-control/control-config';
   standalone: true,
   imports: [ReactiveFormsModule, DragDropModule],
   templateUrl: './form-renderer.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormRendererComponent implements OnChanges, AfterViewInit {
-  form = new FormGroup({});
+export class FormRendererComponent implements OnChanges {
   @Input() controlConfigs: ControlConfig[];
   @Output() formSubmit = new EventEmitter();
   @Output() editControl = new EventEmitter();
   @Output() removeControl = new EventEmitter();
-
+  
   @ViewChild('dynamicControl', { read: ViewContainerRef })
   dynamicControl: ViewContainerRef;
-
+  
+  form = new FormGroup({});
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['controlConfigs'].isFirstChange()) {
@@ -43,7 +43,6 @@ export class FormRendererComponent implements OnChanges, AfterViewInit {
     }
   }
 
-  ngAfterViewInit(): void {}
 
   private createControls() {
     if (this.controlConfigs?.length > 0) {

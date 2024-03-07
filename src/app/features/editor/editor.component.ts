@@ -1,5 +1,6 @@
-import { JsonPipe, NgClass, NgIf } from '@angular/common';
+import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   EventEmitter,
@@ -20,28 +21,42 @@ import {
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Observable, map, of, take } from 'rxjs';
+import { CardComponent } from '../../shared/card/card.component';
 import { controlsFeature } from '../../store/controls.state';
 import { ControlConfig } from '../dynamic-control/control-config';
-import { CardComponent } from "../../shared/card/card.component";
 
 @Component({
-    selector: 'app-editor',
-    standalone: true,
-    templateUrl: './editor.component.html',
-    imports: [ReactiveFormsModule, NgIf, NgClass, JsonPipe, CardComponent]
+  selector: 'app-editor',
+  standalone: true,
+  templateUrl: './editor.component.html',
+  imports: [
+    ReactiveFormsModule,
+    NgIf,
+    NgFor,
+    NgStyle,
+    NgClass,
+    JsonPipe,
+    CardComponent,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EditorComponent implements OnInit {
   @Input() set selectedControl(value: ControlConfig | null) {
-    if(value === null) return;
-    this.isEditMode = true;
+    if (!this.editorForm) return;
+    value === null ? (this.isEditMode = false) : (this.isEditMode = true);
     this.patchForm(value!);
   }
   @Output() formValue = new EventEmitter();
-  isEditMode = false;
+  @Input() inputTypes: string[] | null = [];
+
+  private store = inject(Store);
+  private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
+
   editorForm: FormGroup;
-  store = inject(Store);
-  fb = inject(FormBuilder);
-  
+
+  isEditMode = false;
+
   isSubmit = false;
   get type() {
     return this.editorForm.get('type');
@@ -56,18 +71,15 @@ export class EditorComponent implements OnInit {
     return this.editorForm.get('placeholder');
   }
 
-  private destroyRef = inject(DestroyRef);
-
-  constructor() {
-    this.editorForm = this.createForm();
-  }
-
   ngOnInit(): void {
+    this.editorForm = this.createForm();
     this.formTypeChangeSub();
   }
 
-  patchForm(control: ControlConfig) {
-    this.editorForm.patchValue(control);
+  patchForm(control: ControlConfig | null) {
+    control === null
+      ? this.editorForm.reset()
+      : this.editorForm.patchValue(control);
   }
 
   formTypeChangeSub() {
@@ -109,7 +121,10 @@ export class EditorComponent implements OnInit {
 
   handleSubmit() {
     if (this.editorForm.valid) {
-      this.formValue.emit({formValue: this.editorForm.value, isEdit: this.isEditMode});
+      this.formValue.emit({
+        formValue: this.editorForm.value,
+        isEdit: this.isEditMode,
+      });
       this.editorForm.reset();
       this.isEditMode = false;
     }
@@ -118,7 +133,7 @@ export class EditorComponent implements OnInit {
   private isValidName(): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
       const value = control.value;
-      if(this.isEditMode) return of(null);
+      if (this.isEditMode) return of(null);
 
       return this.store.select(controlsFeature.selectControls).pipe(
         take(1),

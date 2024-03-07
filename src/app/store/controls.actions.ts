@@ -1,4 +1,4 @@
-import { createActionGroup, props } from '@ngrx/store';
+import { createActionGroup, emptyProps, props } from '@ngrx/store';
 import { ControlConfig } from '../features/dynamic-control/control-config';
 
 
@@ -10,6 +10,9 @@ export const ControlsActions = createActionGroup({
     'Remove Control': props<{ controlId: string }>(),
     'Edit Control': props<{ controlId: string, editedControl: ControlConfig }>(),
     'Select Control': props<{ controlId: string, selectedControl: ControlConfig }>(),
+    'Clear Selected Control': emptyProps(),
+    'Set Input Types': props<{ inputTypes: string[] }>(),
+    'No Action': emptyProps(),
   },
 });
 

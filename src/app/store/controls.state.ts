@@ -1,4 +1,3 @@
-
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { ControlConfig } from '../features/dynamic-control/control-config';
 import { ControlsActions } from './controls.actions';
@@ -7,12 +6,14 @@ interface State {
   controls: ControlConfig[];
   loading: boolean;
   selectedControl: ControlConfig | null;
+  inputTypes: string[];
 }
 
 export const initialState: State = {
   controls: [],
   loading: false,
   selectedControl: null,
+  inputTypes: [],
 };
 
 export const controlsFeature = createFeature({
@@ -29,12 +30,12 @@ export const controlsFeature = createFeature({
     })),
     on(ControlsActions.removeControl, (state, { controlId }) => ({
       ...state,
-      controls: state.controls.filter((control) => control.name !== controlId),
+      controls: state.controls.filter((control) => control.id !== controlId),
     })),
     on(ControlsActions.editControl, (state, { controlId, editedControl }) => ({
       ...state,
       controls: state.controls.map((control) => {
-        if (control.name === controlId) return editedControl;
+        if (control.id === controlId) return editedControl;
         return control;
       }),
     })),
@@ -45,12 +46,20 @@ export const controlsFeature = createFeature({
         ...state,
         selectedControl,
       })
-    )
-  ),
-  extraSelectors: ({selectControls}) => ({
-    selectControlByName: (name: string) =>  createSelector(
-      selectControls,
-      (state) => state.find((control) => control.name === name)
     ),
-})  
+    on(ControlsActions.clearSelectedControl, (state) => ({
+      ...state,
+      selectedControl: null,
+    })),
+    on(ControlsActions.setInputTypes, (state, { inputTypes }) => ({
+      ...state,
+      inputTypes,
+    }))
+  ),
+  extraSelectors: ({ selectControls }) => ({
+    selectControlByName: (name: string) =>
+      createSelector(selectControls, (state) =>
+        state.find((control) => control.name === name)
+      ),
+  }),
 });

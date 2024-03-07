@@ -5,20 +5,17 @@
     </div>
   </div>
 
-  <div class="row mt-auto">
-    <div class="col-lg-4 mt-auto" cdkDrag>
-        <app-editor
-        [selectedControl]="selectedControl$ | async" (formValue)="onEditorSubmit($event)"></app-editor>
+  <div class="row justify-content-around align-self-start">
+    <div class="col-lg-4" cdkDrag>
+      <app-editor
+        [selectedControl]="selectedControl$ | async"
+        [inputTypes]="inputTypes$ | async"
+        (formValue)="onEditorSubmit($event)"
+      ></app-editor>
     </div>
 
     <ng-container *ngIf="formConfigs$ | async as formConfigs">
-      <div class="col-lg-4 mt-3">
-        <app-card title="Generated Code">
-          {{ formConfigs | json }}
-        </app-card>
-      </div>
-
-      <div class="col-lg-4 mt-3">
+      <div class="col-lg-6">
         <app-form-renderer
           [controlConfigs]="formConfigs"
           (formSubmit)="submitForm($event)"
@@ -26,56 +23,21 @@
           (removeControl)="removeControl($event)"
         ></app-form-renderer>
       </div>
-    </ng-container>
-  </div>
-  <div class="row mt-auto">
-    <!-- <div class="col-lg-4 mt-auto" cdkDrag>
-      <app-card title="FormControls Editor">
-        <app-editor
-          *ngIf="selectedControl$ | async as selectedControl"
-          (formValue)="saveControl($event)"
-          [selectedControl]="selectedControl"
-        ></app-editor>
-      </app-card>
-    </div> -->
-    <div>
-      <div
-        cdkDrag
-        class="rectangle"
-        mwlResizable
-        [enableGhostResize]="true"
-        (resizeEnd)="onResizeEnd($event)"
-        [ngStyle]="style"
-      >
-        <div class="example-handle" cdkDragHandle>
-          <svg width="24px" fill="currentColor" viewBox="0 0 24 24">
-            <path
-              d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"
-            ></path>
-            <path d="M0 0h24v24H0z" fill="none"></path>
-          </svg>
+
+      <div class="row mt-auto justify-content-left align-self-start">
+        <div class="col-lg-4 mt-3">
+          <button
+            class="btn btn-outline-secondary"
+            (click)="displayGeneratedConfigs = !displayGeneratedConfigs"
+          >
+            <span *ngIf="!displayGeneratedConfigs">Show Generated Configs</span>
+            <span *ngIf="displayGeneratedConfigs">Hide Generated Configs</span>
+          </button>
+          <app-card *ngIf="displayGeneratedConfigs" title="Generated Code">
+            {{ formConfigs | json }}
+          </app-card>
         </div>
-        <div
-          class="resize-handle-top"
-          mwlResizeHandle
-          [resizeEdges]="{ top: true }"
-        ></div>
-        <div
-          class="resize-handle-left"
-          mwlResizeHandle
-          [resizeEdges]="{ left: true }"
-        ></div>
-        <div
-          class="resize-handle-right"
-          mwlResizeHandle
-          [resizeEdges]="{ right: true }"
-        ></div>
-        <div
-          class="resize-handle-bottom"
-          mwlResizeHandle
-          [resizeEdges]="{ bottom: true }"
-        ></div>
       </div>
-    </div>
+    </ng-container>
   </div>
 </div>

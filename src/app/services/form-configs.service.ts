@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
+import {
+  Observable,
+  combineLatest,
+  delay,
+  of
+} from 'rxjs';
 import { ControlConfig } from '../features/dynamic-control/control-config';
-import { BehaviorSubject, Observable, delay, from, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -38,13 +43,30 @@ export class FormConfigsService {
     },
   ];
 
-  getControlConfigs(): Observable<ControlConfig[]> {
-    return of(this.configs).pipe(
-      delay(1),
-    );
+  private inputTypes = [
+    'text',
+    'number',
+    'email',
+    'password',
+    'date',
+    'time',
+    'file',
+    'textarea',
+  ];
+
+  getConfigs(): Observable<[ControlConfig[], string[]]> {
+    return combineLatest([this.getControlConfigs(), this.getInputTypes()]);
   }
 
   submitForm(value: any) {
     console.log(value);
+  }
+
+  private getControlConfigs(): Observable<ControlConfig[]> {
+    return of(this.configs).pipe(delay(1));
+  }
+
+  private getInputTypes(): Observable<string[]> {
+    return of(this.inputTypes).pipe(delay(1));
   }
 }
