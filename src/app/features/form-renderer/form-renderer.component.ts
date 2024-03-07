@@ -8,7 +8,7 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewContainerRef
+  ViewContainerRef,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from '../dynamic-control/control-config';
@@ -18,17 +18,17 @@ import { ControlConfig } from '../dynamic-control/control-config';
   standalone: true,
   imports: [ReactiveFormsModule, DragDropModule],
   templateUrl: './form-renderer.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormRendererComponent implements OnChanges {
   @Input() controlConfigs: ControlConfig[];
   @Output() formSubmit = new EventEmitter();
   @Output() editControl = new EventEmitter();
   @Output() removeControl = new EventEmitter();
-  
+
   @ViewChild('dynamicControl', { read: ViewContainerRef })
   dynamicControl: ViewContainerRef;
-  
+
   form = new FormGroup({});
 
   ngOnChanges(changes: SimpleChanges) {
@@ -42,7 +42,6 @@ export class FormRendererComponent implements OnChanges {
       this.createControls();
     }
   }
-
 
   private createControls() {
     if (this.controlConfigs?.length > 0) {
@@ -76,6 +75,8 @@ export class FormRendererComponent implements OnChanges {
     const removeSub = control.instance.removeControlEvent.subscribe(
       (controlConfig: ControlConfig) => {
         this.removeControl.emit(controlConfig);
+        this.form.removeControl(controlConfig.name);
+        console.log(this.form);
       }
     );
     control.onDestroy(() => {
