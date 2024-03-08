@@ -1,6 +1,12 @@
 import { CdkDrag } from '@angular/cdk/drag-drop';
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ControlConfig } from './control-config';
 
@@ -9,7 +15,7 @@ import { ControlConfig } from './control-config';
   standalone: true,
   imports: [ReactiveFormsModule, NgIf, TitleCasePipe, CdkDrag],
   templateUrl: './dynamic-control.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DynamicControlComponent {
   @Output() formSubmit = new EventEmitter();
@@ -18,10 +24,12 @@ export class DynamicControlComponent {
   @Input() controlConfig: ControlConfig;
   @Input() formGroup: FormGroup;
 
-  selectControl() {
+  selectControl(event: Event) {
+    event.stopPropagation();
     this.editControlEvent.emit(this.controlConfig);
   }
-  removeControl() {
+  removeControl(event: Event) {
+    event.stopPropagation();
     this.removeControlEvent.emit(this.controlConfig);
   }
 }

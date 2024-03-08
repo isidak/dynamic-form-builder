@@ -130,6 +130,11 @@ export class EditorComponent implements OnInit {
     }
   }
 
+  cancelEdit() {
+    this.editorForm.reset();
+    this.isEditMode = false;
+  }
+
   private isValidName(): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
       const value = control.value;

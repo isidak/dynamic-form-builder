@@ -16,14 +16,16 @@
       />
       <div class="row justify-content-end">
         <button
+          type="button"
           class="btn btn-info m-2 col-auto"
-          (click)="selectControl()"
+          (click)="selectControl($event)"
         >
           Edit
         </button>
         <button
-          class="btn btn-warning m-2 col-auto"
-          (click)="removeControl()"
+          type="button"
+          class="btn btn-danger m-2 col-auto"
+          (click)="removeControl($event)"
         >
           Remove
         </button>
