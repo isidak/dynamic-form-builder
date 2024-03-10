@@ -2,7 +2,7 @@ import {
   CdkDrag,
   CdkDragDrop,
   CdkDragHandle,
-  DragDropModule
+  DragDropModule,
 } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
@@ -15,8 +15,9 @@ import { EditorComponent } from './features/editor/editor.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
 import { FormConfigsService } from './services/form-configs.service';
 import { CardComponent } from './shared/card/card.component';
-import { ControlsActions } from './store/controls.actions';
-import { controlsFeature } from './store/controls.state';
+import { ComponentsActions, ControlsActions } from './store/controls.actions';
+import { componentsFeature, controlsFeature } from './store/controls.state';
+import { InputComponent } from './features/components/input/input.component';
 
 @Component({
   selector: 'app-root',
@@ -36,6 +37,7 @@ import { controlsFeature } from './store/controls.state';
     NgStyle,
     CdkDragHandle,
     DragDropModule,
+    InputComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -48,10 +50,9 @@ export class AppComponent implements OnInit {
   selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
   //  configArray: ControlConfig[] = [];
-  formConfigs$ = this.store
-    .select(controlsFeature.selectControls);
+  formConfigs$ = this.store.select(controlsFeature.selectControls);
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
- 
+  components$ = this.store.select(componentsFeature.selectComponents);
 
   ngOnInit(): void {
     this.formConfigService
@@ -60,6 +61,14 @@ export class AppComponent implements OnInit {
       .subscribe(([controls, inputTypes]) => {
         this.store.dispatch(ControlsActions.setControls({ controls }));
         this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
+      });
+
+    this.formConfigService
+      .getComponents()
+      .pipe(take(1))
+      .subscribe((components) => {
+        console.log(components);
+        this.store.dispatch(ComponentsActions.setComponents({ components }));
       });
   }
 
@@ -93,9 +102,7 @@ export class AppComponent implements OnInit {
   }
 
   removeControl(event: ControlConfig) {
-    this.store.dispatch(
-      ControlsActions.removeControl({ controlId: event.id })
-    );
+    this.store.dispatch(ControlsActions.removeControl({ controlId: event.id }));
   }
 
   saveControl(control: ControlConfig) {
@@ -111,7 +118,7 @@ export class AppComponent implements OnInit {
     let newId;
     const controls = this.store.selectSignal(controlsFeature.selectControls)();
 
-    if (controls.length === 0) return newId = 1;
+    if (controls.length === 0) return (newId = 1);
     if (controls.length > 1)
       return (newId =
         Math.max(...controls.map((control) => Number(control.id))) + 1);

@@ -1,12 +1,13 @@
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { ControlConfig } from '../features/dynamic-control/control-config';
-import { ControlsActions } from './controls.actions';
+import { ComponentsActions, ControlsActions } from './controls.actions';
 
 interface State {
   controls: ControlConfig[];
   loading: boolean;
   selectedControl: ControlConfig | null;
   inputTypes: string[];
+  components: any[];
 }
 
 export const initialState: State = {
@@ -14,6 +15,7 @@ export const initialState: State = {
   loading: false,
   selectedControl: null,
   inputTypes: [],
+  components: [],
 };
 
 export const controlsFeature = createFeature({
@@ -23,6 +25,10 @@ export const controlsFeature = createFeature({
     on(ControlsActions.setControls, (state, { controls }) => ({
       ...state,
       controls: [...controls],
+    })),
+    on(ControlsActions.setComponents, (state, { components }) => ({
+      ...state,
+      components: [...components],
     })),
     on(ControlsActions.addControl, (state, { control }) => ({
       ...state,
@@ -62,4 +68,16 @@ export const controlsFeature = createFeature({
         state.find((control) => control.name === name)
       ),
   }),
+});
+
+export const componentsFeature = createFeature({
+  name: 'components',
+  reducer: createReducer(
+    initialState,
+    on(ComponentsActions.setComponents, (state, { components }) => ({
+      ...state,
+      components: [...components],
+    })),
+    on(ComponentsActions.noAction, (state) => state)
+  ),
 });

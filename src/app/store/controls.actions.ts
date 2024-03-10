@@ -6,6 +6,7 @@ export const ControlsActions = createActionGroup({
   source: 'Controls',
   events: {
     'Set Controls': props<{ controls: ControlConfig[] }>(),
+    'Set Components': props<{ components: any[] }>(),
     'Add Control': props<{ control: ControlConfig }>(),
     'Remove Control': props<{ controlId: string }>(),
     'Edit Control': props<{ controlId: string, editedControl: ControlConfig }>(),
@@ -16,9 +17,16 @@ export const ControlsActions = createActionGroup({
   },
 });
 
-export const ControlsApiActions = createActionGroup({
-  source: 'Controls API',
+// export const ControlsApiActions = createActionGroup({
+//   source: 'Controls API',
+//   events: {
+//     'Retrieved Controls List': props<{ controls: ReadonlyArray<ControlConfig> }>(),
+//   },
+
+export const ComponentsActions = createActionGroup({
+  source: 'Components',
   events: {
-    'Retrieved Controls List': props<{ controls: ReadonlyArray<ControlConfig> }>(),
+    'Set Components': props<{ components: any[] }>(),
+    'No Action': emptyProps(),
   },
 });

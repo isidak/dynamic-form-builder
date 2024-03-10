@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideState, provideStore } from '@ngrx/store';
-import { controlsFeature } from './store/controls.state';
+import { componentsFeature, controlsFeature } from './store/controls.state';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideEffects } from '@ngrx/effects';
 import { ControlsEffects } from './store/controls.effects';
@@ -23,6 +23,7 @@ export const appConfig: ApplicationConfig = {
         connectInZone: true, // If set to true, the connection is established within the Angular zone
     }),
     provideState(controlsFeature),
+    provideState(componentsFeature),
     provideEffects(ControlsEffects)
 ],
 };
