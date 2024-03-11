@@ -8,14 +8,13 @@ import {
 } from '@angular/common';
 import {
   Component,
-  ComponentRef,
   DestroyRef,
   EnvironmentInjector,
   EventEmitter,
   Input,
   OnInit,
   Output,
-  inject,
+  inject
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -48,11 +47,6 @@ export class FormRendererComponent implements OnInit {
 
   importedComponents$: Observable<any[]>;
 
-  // @ViewChildren('dynamicControl', { read: ViewContainerRef })
-  // dynamicControls: QueryList<ViewContainerRef>;
-
-  // selectedComponent: ComponentRef<any>;
-  // componentsArray: any[] = [];
   destroyRef = inject(DestroyRef);
 
   form = new FormGroup({});
@@ -83,67 +77,6 @@ export class FormRendererComponent implements OnInit {
     this.submittedForm.emit(this.form.value);
   }
 
-  // private createControls() {
-  //   if (this.controlConfigs?.length > 0) {
-  //     this.controlConfigs.forEach((controlConfig) => {
-  //       for (const key in Object.entries(this.form.controls)) {
-  //         if (key === controlConfig.name) {
-  //           return;
-  //         }
-  //       }
-  //       if (controlConfig.type !== 'submit') {
-  //         this.form.addControl(controlConfig.name, new FormControl());
-  //       }
-
-  //       // this.createCmp(controlConfig);
-  //     });
-  //   }
-  // }
-
-  // private async createCmp(controlConfig: ControlConfig) {
-  //   // const cmt = (
-  //   //   await import('../dynamic-control/dynamic-control.component')
-  //   // ).DynamicControlComponent;
-  //   const cmt = DynamicControlComponent;
-  //   let component: Record<string, unknown> = {};
-  //   component['cmt'] = cmt;
-  //   component['inputs'] = {'controlConfig': controlConfig, 'formGroup': this.form};
-  //   component['outputs'] = {
-  //     'formSubmit': this.formSubmit,
-  //     'editControlEvent': this.editControl,
-  //     'removeControlEvent': this.removeControl,
-  //   };
-  //   component['id'] = controlConfig.id;
-  //   const control = createComponent(cmt, {environmentInjector: this.injector});
-  //   this.componentsArray.push(component);
-
-  //   control.setInput('controlConfig', controlConfig);
-  //   control.setInput('formGroup', this.form);
-  //   const editSub = control.instance.editControlEvent.subscribe(
-  //     (controlConfig: ControlConfig) => {
-  //       this.editControl.emit(controlConfig);
-  //     }
-  //   );
-  //   const removeSub = control.instance.removeControlEvent.subscribe(
-  //     (controlConfig: ControlConfig) => {
-  //       this.removeControl.emit(controlConfig);
-  //       this.form.removeControl(controlConfig.name);
-  //     }
-  //   );
-  //   control.onDestroy(() => {
-  //     editSub.unsubscribe();
-  //     removeSub.unsubscribe();
-  //   });
-
-  //   this.dynamicControls.forEach((container) => {
-  //     console.log(container);
-  // })
-
-  //   console.log(this.componentsArray);
-  // }
-
-  //new implementation
-
   createComps(components: any[]) {
     let newComponents: any[] = [];
     components.forEach(async (component) => {
@@ -158,7 +91,7 @@ export class FormRendererComponent implements OnInit {
       ...configs,
       importedCmp: await configs['component'](),
     };
-    // this.componentsArray.push(newCmp);
+
 
     return newCmp;
   }
