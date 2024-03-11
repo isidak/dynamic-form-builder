@@ -3,7 +3,6 @@
     <div class="col-auto">
       <h1>Dynamic form renderer</h1>
     </div>
-    
   </div>
 
   <div class="row justify-content-around align-self-start">
@@ -20,9 +19,9 @@
       <div class="col-lg-6">
         <app-form-renderer
           [controlConfigs]="formConfigs"
-          (formSubmit)="submitForm($event)"
-          (editControl)="editControl($event)"
-          (removeControl)="removeControl($event)"
+          (submittedForm)="submitForm($event)"
+          (selected)="selectComponent($event)"
+          (remove)="removeComponent($event)"
           [components$]="components$"
         ></app-form-renderer>
       </div>

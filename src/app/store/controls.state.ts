@@ -99,10 +99,16 @@ export const componentsFeature = createFeature({
         return component;
       }),
     })),
-    on(ComponentsActions.selectComponent, (state, { componentId, selectedComponent }) => ({
+    on(ComponentsActions.selectComponent, (state, { id }) => ({
       ...state,
-      selectedComponent,
+      selectedComponent: state.components.find((component) => component.id === id),
     })),
     on(ComponentsActions.noAction, (state) => state)
   ),
+  extraSelectors: ({ selectComponents }) => ({
+    selectComponentById: (id: string) =>
+      createSelector(selectComponents, (state) =>
+        state.find((component) => component.id === id)
+      ),
+  }),
 });

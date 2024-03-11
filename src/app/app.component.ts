@@ -65,13 +65,13 @@ export class AppComponent implements OnInit {
   addComponent$ = new Subject<DynamicComponentConfig>();
 
   ngOnInit(): void {
-    this.formConfigService
-      .getConfigs()
-      .pipe(take(1))
-      .subscribe(([controls, inputTypes]) => {
-        this.store.dispatch(ControlsActions.setControls({ controls }));
-        this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
-      });
+    // this.formConfigService
+    //   .getConfigs()
+    //   .pipe(take(1))
+    //   .subscribe(([controls, inputTypes]) => {
+    //     this.store.dispatch(ControlsActions.setControls({ controls }));
+    //     this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
+    //   });
 
     this.formConfigService
       .getComponents()
@@ -135,17 +135,14 @@ export class AppComponent implements OnInit {
     // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
 
-  editControl(event: ControlConfig) {
+  selectComponent(id: string) {
     this.store.dispatch(
-      ControlsActions.selectControl({
-        controlId: event.id,
-        selectedControl: event,
-      })
+      ComponentsActions.selectComponent({id})
     );
   }
 
-  removeControl(event: ControlConfig) {
-    this.store.dispatch(ControlsActions.removeControl({ controlId: event.id }));
+  removeComponent(id: string) {
+    this.store.dispatch(ComponentsActions.removeComponent({ componentId: id }));
   }
 
   saveControl(control: ControlConfig) {
