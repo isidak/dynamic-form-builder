@@ -3,22 +3,23 @@
 >
   <form [formGroup]="form" (ngSubmit)="handleSubmit()">
     <div class="form-group">
-        <label for="type">Choose Component:</label>
-        <select
-          id="name"
-          class="form-control mt-2"
-          formControlName="name"
-          placeholder="Enter Component type"
-        >
-          <option value="" disabled>select Component</option>
+      <label for="type">Choose Component:</label>
+      <select
+        id="name"
+        class="form-control mt-2"
+        formControlName="name"
+        placeholder="Enter Component type"
+      >
+        <option value="" disabled>select Component</option>
+        <ng-container *ngIf="!isEditMode">
           <option *ngFor="let type of componentTypes" [value]="type.name">
             {{ type.name }}
           </option>
-        </select>
-      </div>
+        </ng-container>
+      </select>
+    </div>
 
     <div formGroupName="inputs">
-
       <div class="form-group">
         <label for="type">Choose FormControl type:</label>
         <select

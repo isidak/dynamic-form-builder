@@ -1,29 +1,21 @@
+import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import {
-  Component,
-  DestroyRef,
-  EventEmitter,
-  Input,
-  Output,
-  inject,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
+  AbstractControl,
+  AsyncValidatorFn,
   FormBuilder,
   FormGroup,
-  Validators,
-  AsyncValidatorFn,
-  AbstractControl,
-  ValidationErrors,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Observable, of, take, map } from 'rxjs';
-import { controlsFeature } from '../../store/controls.state';
-import { DynamicComponentConfig } from '../models/dynamic-component-config';
-import { NgIf, NgFor, NgStyle, NgClass, JsonPipe } from '@angular/common';
+import { Observable, map, of, take } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
+import { controlsFeature } from '../../store/controls.state';
 import { EditorComponent } from '../editor/editor.component';
 import { ComponentType } from '../models/component-type';
+import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
 @Component({
   selector: 'app-component-creator',
@@ -36,7 +28,7 @@ import { ComponentType } from '../models/component-type';
     NgClass,
     JsonPipe,
     CardComponent,
-    EditorComponent
+    EditorComponent,
   ],
   templateUrl: './component-creator.component.html',
   styleUrl: './component-creator.component.css',
@@ -48,12 +40,12 @@ export class ComponentCreatorComponent {
     this.patchForm(value!);
   }
   @Output() formValue = new EventEmitter();
+  @Output() editCanceled = new EventEmitter();
   @Input() inputTypes: string[] | null = [];
   @Input() componentTypes: ComponentType[] | null = [];
 
   private store = inject(Store);
   private fb = inject(FormBuilder);
-  private destroyRef = inject(DestroyRef);
 
   form: FormGroup;
 
@@ -75,36 +67,10 @@ export class ComponentCreatorComponent {
 
   ngOnInit(): void {
     this.form = this.createForm();
-    this.formTypeChangeSub();
   }
 
   patchForm(control: DynamicComponentConfig | null) {
-    control === null
-      ? this.form.reset()
-      : this.form.patchValue(control);
-  }
-
-  formTypeChangeSub() {
-    this.form
-      .get('type')
-      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value) => {
-        if (value === 'submit') {
-          this.isSubmit = true;
-          for (const key in this.form.controls) {
-            if (key !== 'type') {
-              this.form.get(key)?.disable();
-            }
-          }
-        } else {
-          this.isSubmit = false;
-          for (const key in this.form.controls) {
-            if (key !== 'type') {
-              this.form.get(key)?.enable();
-            }
-          }
-        }
-      });
+    control === null ? this.form.reset() : this.form.patchValue(control);
   }
 
   createForm(): FormGroup<any> {
@@ -113,7 +79,10 @@ export class ComponentCreatorComponent {
       importedCmp: [''],
       id: [''],
       name: [
-        '',
+        {
+          value: '',
+          disabled: this.isEditMode,
+        },
         [Validators.required, Validators.minLength(3)],
         [this.isValidName()],
       ],
@@ -132,11 +101,10 @@ export class ComponentCreatorComponent {
 
   handleSubmit() {
     if (this.form.valid) {
-      console.log(this.form.value);
-      this.formValue.emit(
-      this.form.value
-        // isEdit: this.isEditMode,
-      );
+      this.formValue.emit({
+        form: this.form.value,
+        isEdit: this.isEditMode,
+      });
       this.form.reset();
       this.isEditMode = false;
     }
@@ -145,6 +113,7 @@ export class ComponentCreatorComponent {
   cancelEdit() {
     this.form.reset();
     this.isEditMode = false;
+    this.editCanceled.emit();
   }
 
   private isValidName(): AsyncValidatorFn {

@@ -6,21 +6,21 @@ import {
 } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, map, take, takeUntil, tap, withLatestFrom } from 'rxjs';
+import { Subject, map, take, tap, withLatestFrom } from 'rxjs';
+import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
+import { InputComponent } from './features/components/input/input.component';
 import { ControlConfig } from './features/dynamic-control/control-config';
 import { EditorComponent } from './features/editor/editor.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
+import { DynamicComponentConfig } from './features/models/dynamic-component-config';
 import { FormConfigsService } from './services/form-configs.service';
 import { CardComponent } from './shared/card/card.component';
 import { ComponentsActions, ControlsActions } from './store/controls.actions';
 import { componentsFeature, controlsFeature } from './store/controls.state';
-import { InputComponent } from './features/components/input/input.component';
-import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
-import { DynamicComponentConfig } from './features/models/dynamic-component-config';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -56,8 +56,6 @@ export class AppComponent implements OnInit {
   );
   selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
-  //  configArray: ControlConfig[] = [];
-  formConfigs$ = this.store.select(controlsFeature.selectControls);
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
   components$ = this.store.select(componentsFeature.selectComponents);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
@@ -65,13 +63,12 @@ export class AppComponent implements OnInit {
   addComponent$ = new Subject<DynamicComponentConfig>();
 
   ngOnInit(): void {
-    // this.formConfigService
-    //   .getConfigs()
-    //   .pipe(take(1))
-    //   .subscribe(([controls, inputTypes]) => {
-    //     this.store.dispatch(ControlsActions.setControls({ controls }));
-    //     this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
-    //   });
+    this.formConfigService
+      .getInputTypes()
+      .pipe(take(1))
+      .subscribe((inputTypes) => {
+        this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
+      });
 
     this.formConfigService
       .getComponents()
@@ -110,19 +107,12 @@ export class AppComponent implements OnInit {
   }
 
   onEditorSubmit(value: any) {
-    // value.isEdit
-    //   ? this.saveControl(value.formValue)
-    // : // : this.addControl(value.formValue);
-    this.addComponent(value);
-  }
-
-  addControl(control: ControlConfig) {
-    control.id = `${this.generateId()}`;
-    this.store.dispatch(ControlsActions.addControl({ control }));
+    value.isEdit
+      ? this.saveComponent(value.form)
+      : this.addComponent(value.form);
   }
 
   addComponent(component: DynamicComponentConfig) {
-    console.log('component', component);
     this.addComponent$.next(component);
   }
 
@@ -136,22 +126,23 @@ export class AppComponent implements OnInit {
   }
 
   selectComponent(id: string) {
-    this.store.dispatch(
-      ComponentsActions.selectComponent({id})
-    );
+    this.store.dispatch(ComponentsActions.selectComponent({ id }));
   }
 
   removeComponent(id: string) {
-    this.store.dispatch(ComponentsActions.removeComponent({ componentId: id }));
+    this.store.dispatch(ComponentsActions.removeComponent({ id }));
   }
 
-  saveControl(control: ControlConfig) {
+  saveComponent(component: DynamicComponentConfig) {
     this.store.dispatch(
-      ControlsActions.editControl({
-        controlId: control.id,
-        editedControl: control,
+      ComponentsActions.editComponent({
+        editedComponent: component,
       })
     );
+  }
+
+  cancelEdit() {
+    this.store.dispatch(ComponentsActions.clearSelectedComponent());
   }
 
   generateId() {

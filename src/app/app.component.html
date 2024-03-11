@@ -12,6 +12,7 @@
         [componentTypes]="componentTypes$ | async"
         [inputTypes]="inputTypes$ | async"
         (formValue)="onEditorSubmit($event)"
+        (editCanceled)="cancelEdit()"
       ></app-component-creator>
     </div>
 

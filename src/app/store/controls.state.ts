@@ -21,7 +21,7 @@ export const initialState: State = {
   inputTypes: [],
   components: [],
   componentTypes: [],
-  selectedComponent: null
+  selectedComponent: null,
 };
 
 export const controlsFeature = createFeature({
@@ -88,27 +88,28 @@ export const componentsFeature = createFeature({
       ...state,
       components: [...state.components, component],
     })),
-    on(ComponentsActions.removeComponent, (state, { componentId }) => ({
+    on(ComponentsActions.removeComponent, (state, { id: componentId }) => ({
       ...state,
-      components: state.components.filter((component) => component.id !== componentId),
+      components: state.components.filter(
+        (component) => component.id !== componentId
+      ),
     })),
-    on(ComponentsActions.editComponent, (state, { componentId, editedComponent }) => ({
+    on(ComponentsActions.editComponent, (state, { editedComponent }) => ({
       ...state,
       components: state.components.map((component) => {
-        if (component.id === componentId) return editedComponent;
+        if (component.id === editedComponent.id) return editedComponent;
         return component;
       }),
     })),
     on(ComponentsActions.selectComponent, (state, { id }) => ({
       ...state,
-      selectedComponent: state.components.find((component) => component.id === id),
-    })),
-    on(ComponentsActions.noAction, (state) => state)
-  ),
-  extraSelectors: ({ selectComponents }) => ({
-    selectComponentById: (id: string) =>
-      createSelector(selectComponents, (state) =>
-        state.find((component) => component.id === id)
+      selectedComponent: state.components.find(
+        (component) => component.id === id
       ),
-  }),
+    })),
+    on(ComponentsActions.clearSelectedComponent, (state) => ({
+      ...state,
+      selectedComponent: null,
+    }))
+  ),
 });
