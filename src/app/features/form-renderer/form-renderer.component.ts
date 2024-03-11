@@ -14,7 +14,7 @@ import {
   Input,
   OnInit,
   Output,
-  inject
+  inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -38,7 +38,6 @@ import { ControlConfig } from '../dynamic-control/control-config';
   templateUrl: './form-renderer.component.html',
 })
 export class FormRendererComponent implements OnInit {
-  @Input() controlConfigs: ControlConfig[];
   @Input() components$: Observable<any[]>;
 
   @Output() submittedForm = new EventEmitter();
@@ -59,7 +58,10 @@ export class FormRendererComponent implements OnInit {
       distinctUntilChanged(
         (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
       ),
-      filter((components) => components.length > 0),
+      distinctUntilChanged(
+        (prev, curr) => prev.length === 0 && curr.length === 0
+      ),
+      // filter((components) => components.length > 0),
       map((components) => this.createComps(components))
     );
   }
@@ -73,7 +75,7 @@ export class FormRendererComponent implements OnInit {
   }
 
   submitForm() {
-    console.log(this.form.value)
+    console.log(this.form.value);
     this.submittedForm.emit(this.form.value);
   }
 
@@ -91,7 +93,6 @@ export class FormRendererComponent implements OnInit {
       ...configs,
       importedCmp: await configs['component'](),
     };
-
 
     return newCmp;
   }

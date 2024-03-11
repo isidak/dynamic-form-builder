@@ -13,7 +13,6 @@ import { ResizableModule } from 'angular-resizable-element';
 import { Subject, map, take, tap, withLatestFrom } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
-import { ControlConfig } from './features/dynamic-control/control-config';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
 import { DynamicComponentConfig } from './features/models/dynamic-component-config';
 import { FormConfigsService } from './services/form-configs.service';
@@ -117,7 +116,7 @@ export class AppComponent implements OnInit {
     this.formConfigService.submitForm(value);
   }
 
-  drop(event: CdkDragDrop<string[]>, formConfigs: ControlConfig[]) {
+  drop(event: CdkDragDrop<string[]>) {
     // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
     // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
