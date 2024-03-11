@@ -15,16 +15,11 @@ import {
   Input,
   OnInit,
   Output,
-  inject
+  inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {
-  Observable,
-  distinctUntilChanged,
-  filter,
-  map
-} from 'rxjs';
+import { Observable, distinctUntilChanged, filter, map } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { ControlConfig } from '../dynamic-control/control-config';
 
@@ -47,16 +42,16 @@ export class FormRendererComponent implements OnInit {
   @Input() controlConfigs: ControlConfig[];
   @Input() components$: Observable<any[]>;
 
-  @Output() formSubmit = new EventEmitter();
-  @Output() editControl = new EventEmitter();
-  @Output() removeControl = new EventEmitter();
-  
+  @Output() submittedForm = new EventEmitter();
+  @Output() selected = new EventEmitter();
+  @Output() remove = new EventEmitter();
+
   importedComponents$: Observable<any[]>;
 
   // @ViewChildren('dynamicControl', { read: ViewContainerRef })
   // dynamicControls: QueryList<ViewContainerRef>;
 
-  selectedComponent: ComponentRef<any>;
+  // selectedComponent: ComponentRef<any>;
   // componentsArray: any[] = [];
   destroyRef = inject(DestroyRef);
 
@@ -75,6 +70,18 @@ export class FormRendererComponent implements OnInit {
     );
   }
 
+  removeComponent(id: string) {
+    this.remove.emit(id);
+  }
+
+  selectComponent(id: string) {
+    this.selected.emit(id);
+  }
+
+  submitForm() {
+    console.log(this.form.value)
+    this.submittedForm.emit(this.form.value);
+  }
 
   // private createControls() {
   //   if (this.controlConfigs?.length > 0) {
@@ -159,5 +166,4 @@ export class FormRendererComponent implements OnInit {
   trackById(index: number, item: any) {
     return item.id;
   }
-
 }
