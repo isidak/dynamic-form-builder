@@ -4,8 +4,9 @@
       *ngFor="let component of components; index as i; trackBy: trackById"
     >
       <ng-container
-        *ngComponentOutlet="component['component']; inputs: component['inputs']"
-      ></ng-container>
+        *ngComponentOutlet="component['importedCmp']; inputs: component['inputs']"
+      > Hello Container</ng-container>
     </ng-container>
   </ng-container>
+    <button type="submit" class="btn btn-primary mt-2">Submit</button>
 </form>

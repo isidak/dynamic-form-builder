@@ -9,7 +9,7 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { take } from 'rxjs';
+import { Subject, map, take, takeUntil, tap, withLatestFrom } from 'rxjs';
 import { ControlConfig } from './features/dynamic-control/control-config';
 import { EditorComponent } from './features/editor/editor.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
@@ -18,6 +18,9 @@ import { CardComponent } from './shared/card/card.component';
 import { ComponentsActions, ControlsActions } from './store/controls.actions';
 import { componentsFeature, controlsFeature } from './store/controls.state';
 import { InputComponent } from './features/components/input/input.component';
+import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
+import { DynamicComponentConfig } from './features/models/dynamic-component-config';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +30,7 @@ import { InputComponent } from './features/components/input/input.component';
   imports: [
     RouterOutlet,
     EditorComponent,
+    ComponentCreatorComponent,
     FormRendererComponent,
     CardComponent,
     JsonPipe,
@@ -47,12 +51,18 @@ export class AppComponent implements OnInit {
   private formConfigService = inject(FormConfigsService);
   private destroyRef = inject(DestroyRef);
 
+  selectedComponent$ = this.store.select(
+    componentsFeature.selectSelectedComponent
+  );
   selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
   //  configArray: ControlConfig[] = [];
   formConfigs$ = this.store.select(controlsFeature.selectControls);
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
   components$ = this.store.select(componentsFeature.selectComponents);
+  componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
+
+  addComponent$ = new Subject<DynamicComponentConfig>();
 
   ngOnInit(): void {
     this.formConfigService
@@ -67,20 +77,53 @@ export class AppComponent implements OnInit {
       .getComponents()
       .pipe(take(1))
       .subscribe((components) => {
-        console.log(components);
         this.store.dispatch(ComponentsActions.setComponents({ components }));
       });
+
+    this.formConfigService
+      .getComponentTypes()
+      .pipe(take(1))
+      .subscribe((componentTypes) => {
+        this.store.dispatch(
+          ComponentsActions.setComponentTypes({ componentTypes })
+        );
+      });
+
+    this.addComponent$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        withLatestFrom(this.componentTypes$),
+        map(([component, componentTypes]) => {
+          if (!componentTypes) return component;
+          const componentType = componentTypes.find(
+            (type) => type.name === component.name
+          );
+          component.id = this.generateId().toString();
+          component['component'] = componentType!.component;
+          return component;
+        }),
+        tap((component) =>
+          this.store.dispatch(ComponentsActions.addComponent({ component }))
+        )
+      )
+      .subscribe();
   }
 
   onEditorSubmit(value: any) {
-    value.isEdit
-      ? this.saveControl(value.formValue)
-      : this.addControl(value.formValue);
+    // value.isEdit
+    //   ? this.saveControl(value.formValue)
+    // : // : this.addControl(value.formValue);
+    this.addComponent(value);
   }
 
   addControl(control: ControlConfig) {
     control.id = `${this.generateId()}`;
     this.store.dispatch(ControlsActions.addControl({ control }));
+  }
+
+  addComponent(component: DynamicComponentConfig) {
+    console.log('component', component);
+    this.addComponent$.next(component);
   }
 
   submitForm(value: any) {
@@ -116,15 +159,18 @@ export class AppComponent implements OnInit {
 
   generateId() {
     let newId;
-    const controls = this.store.selectSignal(controlsFeature.selectControls)();
+    const components = this.store.selectSignal(
+      componentsFeature.selectComponents
+    )();
+    console.log('id', components);
 
-    if (controls.length === 0) return (newId = 1);
-    if (controls.length > 1)
+    if (components.length === 0) return (newId = 1);
+    if (components.length > 1)
       return (newId =
-        Math.max(...controls.map((control) => Number(control.id))) + 1);
+        Math.max(...components.map((component) => Number(component.id))) + 1);
     return (newId =
       (Number(
-        controls.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
+        components.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
       ) ?? 0) + 1);
   }
 }

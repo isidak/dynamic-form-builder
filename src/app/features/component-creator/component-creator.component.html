@@ -1,0 +1,141 @@
+<app-card
+  [title]="isEditMode ? 'Edit Control' : 'Generate FormControl Component'"
+>
+  <form [formGroup]="form" (ngSubmit)="handleSubmit()">
+    <div class="form-group">
+        <label for="type">Choose Component:</label>
+        <select
+          id="name"
+          class="form-control mt-2"
+          formControlName="name"
+          placeholder="Enter Component type"
+        >
+          <option value="" disabled>select Component</option>
+          <option *ngFor="let type of componentTypes" [value]="type.name">
+            {{ type.name }}
+          </option>
+        </select>
+      </div>
+
+    <div formGroupName="inputs">
+
+      <div class="form-group">
+        <label for="type">Choose FormControl type:</label>
+        <select
+          id="type"
+          class="form-control mt-2"
+          formControlName="type"
+          placeholder="Enter form type"
+        >
+          <option value="" disabled>select control type</option>
+          <option *ngFor="let type of inputTypes" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="label">Label</label>
+        <input
+          type="text"
+          id="label"
+          class="form-control"
+          formControlName="label"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="placeholder">Placeholder</label>
+        <input
+          type="text"
+          id="placeholder"
+          class="form-control"
+          formControlName="placeholder"
+        />
+      </div>
+      <div class="form-group">
+        <label for="controlName">Control Name</label>
+        <input
+          type="text"
+          id="controlName"
+          class="form-control"
+          formControlName="controlName"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="minLength">Min Length</label>
+        <input
+          type="number"
+          id="minLength"
+          class="form-control"
+          formControlName="minLength"
+          min="0"
+        />
+      </div>
+
+      <div class="form-check">
+        <label class="form-check-label" for="required">Required</label>
+        <input
+          type="checkbox"
+          id="required"
+          class="form-check-input"
+          formControlName="required"
+        />
+      </div>
+
+      <div class="form-check">
+        <label class="form-check-label" for="readonly">Readonly</label>
+        <input
+          type="checkbox"
+          id="readonly"
+          class="form-check-input"
+          formControlName="readonly"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="type">Autocomplete:</label>
+        <select
+          id="autocomplete"
+          class="form-control mt-2"
+          formControlName="autocomplete"
+          placeholder="autocomplete"
+        >
+          <option value="" disabled>select autocomplete</option>
+          <option value="on">On</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group mt-2">
+      <button
+        *ngIf="!isEditMode; else editButton"
+        type="submit"
+        class="btn btn-outline-primary mx-auto d-block"
+        [disabled]="!form.valid"
+      >
+        Create form control
+      </button>
+      <ng-template #editButton>
+        <div class="row justify-content-around">
+          <button
+            type="submit"
+            class="btn btn-outline-primary m-2 col"
+            [disabled]="!form.valid"
+          >
+            Edit form control
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger m-2 col"
+            (click)="cancelEdit()"
+          >
+            Cancel Edit
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </form>
+</app-card>

@@ -1,6 +1,8 @@
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { ControlConfig } from '../features/dynamic-control/control-config';
 import { ComponentsActions, ControlsActions } from './controls.actions';
+import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
+import { ComponentType } from '../features/models/component-type';
 
 interface State {
   controls: ControlConfig[];
@@ -8,6 +10,8 @@ interface State {
   selectedControl: ControlConfig | null;
   inputTypes: string[];
   components: any[];
+  componentTypes: ComponentType[] | null;
+  selectedComponent: DynamicComponentConfig | null;
 }
 
 export const initialState: State = {
@@ -16,6 +20,8 @@ export const initialState: State = {
   selectedControl: null,
   inputTypes: [],
   components: [],
+  componentTypes: [],
+  selectedComponent: null
 };
 
 export const controlsFeature = createFeature({
@@ -25,10 +31,6 @@ export const controlsFeature = createFeature({
     on(ControlsActions.setControls, (state, { controls }) => ({
       ...state,
       controls: [...controls],
-    })),
-    on(ControlsActions.setComponents, (state, { components }) => ({
-      ...state,
-      components: [...components],
     })),
     on(ControlsActions.addControl, (state, { control }) => ({
       ...state,
@@ -77,6 +79,29 @@ export const componentsFeature = createFeature({
     on(ComponentsActions.setComponents, (state, { components }) => ({
       ...state,
       components: [...components],
+    })),
+    on(ComponentsActions.setComponentTypes, (state, { componentTypes }) => ({
+      ...state,
+      componentTypes,
+    })),
+    on(ComponentsActions.addComponent, (state, { component }) => ({
+      ...state,
+      components: [...state.components, component],
+    })),
+    on(ComponentsActions.removeComponent, (state, { componentId }) => ({
+      ...state,
+      components: state.components.filter((component) => component.id !== componentId),
+    })),
+    on(ComponentsActions.editComponent, (state, { componentId, editedComponent }) => ({
+      ...state,
+      components: state.components.map((component) => {
+        if (component.id === componentId) return editedComponent;
+        return component;
+      }),
+    })),
+    on(ComponentsActions.selectComponent, (state, { componentId, selectedComponent }) => ({
+      ...state,
+      selectedComponent,
     })),
     on(ComponentsActions.noAction, (state) => state)
   ),

@@ -149,7 +149,7 @@ export class FormRendererComponent implements OnInit {
   async importComponent(configs: any) {
     const newCmp = {
       ...configs,
-      component: await configs['component'](),
+      importedCmp: await configs['component'](),
     };
     // this.componentsArray.push(newCmp);
 
