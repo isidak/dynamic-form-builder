@@ -47,6 +47,7 @@ export class EditorComponent implements OnInit {
     this.patchForm(value!);
   }
   @Output() formValue = new EventEmitter();
+  @Output() editCanceled = new EventEmitter();
   @Input() inputTypes: string[] | null = [];
 
   private store = inject(Store);
@@ -105,20 +106,6 @@ export class EditorComponent implements OnInit {
       });
   }
 
-  createForm(): FormGroup<any> {
-    return this.fb.group({
-      id: [''],
-      name: [
-        '',
-        [Validators.required, Validators.minLength(3)],
-        [this.isValidName()],
-      ],
-      label: ['', [Validators.required, Validators.minLength(3)]],
-      type: ['', Validators.required],
-      placeholder: ['', [Validators.required, Validators.minLength(3)]],
-    });
-  }
-
   handleSubmit() {
     if (this.editorForm.valid) {
       this.formValue.emit({
@@ -133,6 +120,21 @@ export class EditorComponent implements OnInit {
   cancelEdit() {
     this.editorForm.reset();
     this.isEditMode = false;
+    this.editCanceled.emit();
+  }
+
+  private createForm(): FormGroup<any> {
+    return this.fb.group({
+      id: [''],
+      name: [
+        '',
+        [Validators.required, Validators.minLength(3)],
+        [this.isValidName()],
+      ],
+      label: ['', [Validators.required, Validators.minLength(3)]],
+      type: ['', Validators.required],
+      placeholder: ['', [Validators.required, Validators.minLength(3)]],
+    });
   }
 
   private isValidName(): AsyncValidatorFn {

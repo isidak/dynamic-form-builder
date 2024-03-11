@@ -76,8 +76,7 @@ export class FormRendererComponent implements OnChanges {
       (controlConfig: ControlConfig) => {
         this.removeControl.emit(controlConfig);
         this.form.removeControl(controlConfig.name);
-        console.log(this.form);
-      }
+         }
     );
     control.onDestroy(() => {
       editSub.unsubscribe();

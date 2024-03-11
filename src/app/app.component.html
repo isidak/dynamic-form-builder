@@ -11,6 +11,7 @@
         [selectedControl]="selectedControl$ | async"
         [inputTypes]="inputTypes$ | async"
         (formValue)="onEditorSubmit($event)"
+        (editCanceled)="cancelEdit()"
       ></app-editor>
     </div>
 

@@ -1,4 +1,4 @@
-import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
+import { createFeature, createReducer, on } from '@ngrx/store';
 import { ControlConfig } from '../features/dynamic-control/control-config';
 import { ControlsActions } from './controls.actions';
 
@@ -28,23 +28,25 @@ export const controlsFeature = createFeature({
       ...state,
       controls: [...state.controls, control],
     })),
-    on(ControlsActions.removeControl, (state, { controlId }) => ({
+    on(ControlsActions.removeControl, (state, { id }) => ({
       ...state,
-      controls: state.controls.filter((control) => control.id !== controlId),
+      controls: state.controls.filter((control) => control.id !== id),
     })),
-    on(ControlsActions.editControl, (state, { controlId, editedControl }) => ({
-      ...state,
-      controls: state.controls.map((control) => {
-        if (control.id === controlId) return editedControl;
-        return control;
-      }),
-    })),
-
+    on(
+      ControlsActions.editControl,
+      (state, { editedControl }) => ({
+        ...state,
+        controls: state.controls.map((control) => {
+          if (control.id === editedControl.id) return editedControl;
+          return control;
+        }),
+      })
+    ),
     on(
       ControlsActions.selectControl,
-      (state, { controlId, selectedControl }) => ({
+      (state, { id }) => ({
         ...state,
-        selectedControl,
+        selectedControl: (state.controls.find((control) => control.id === id)) || null,
       })
     ),
     on(ControlsActions.clearSelectedControl, (state) => ({
@@ -55,11 +57,5 @@ export const controlsFeature = createFeature({
       ...state,
       inputTypes,
     }))
-  ),
-  extraSelectors: ({ selectControls }) => ({
-    selectControlByName: (name: string) =>
-      createSelector(selectControls, (state) =>
-        state.find((control) => control.name === name)
-      ),
-  }),
+  )
 });

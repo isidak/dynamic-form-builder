@@ -2,10 +2,10 @@ import {
   CdkDrag,
   CdkDragDrop,
   CdkDragHandle,
-  DragDropModule
+  DragDropModule,
 } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
@@ -43,15 +43,12 @@ export class AppComponent implements OnInit {
 
   private store = inject(Store);
   private formConfigService = inject(FormConfigsService);
-  private destroyRef = inject(DestroyRef);
 
   selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
-  //  configArray: ControlConfig[] = [];
-  formConfigs$ = this.store
-    .select(controlsFeature.selectControls);
+
+  formConfigs$ = this.store.select(controlsFeature.selectControls);
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
- 
 
   ngOnInit(): void {
     this.formConfigService
@@ -70,7 +67,7 @@ export class AppComponent implements OnInit {
   }
 
   addControl(control: ControlConfig) {
-    control.id = `${this.generateId()}`;
+    control.id = this.generateId().toString();
     this.store.dispatch(ControlsActions.addControl({ control }));
   }
 
@@ -86,32 +83,32 @@ export class AppComponent implements OnInit {
   editControl(event: ControlConfig) {
     this.store.dispatch(
       ControlsActions.selectControl({
-        controlId: event.id,
-        selectedControl: event,
+        id: event.id,
       })
     );
   }
 
   removeControl(event: ControlConfig) {
-    this.store.dispatch(
-      ControlsActions.removeControl({ controlId: event.id })
-    );
+    this.store.dispatch(ControlsActions.removeControl({ id: event.id }));
   }
 
   saveControl(control: ControlConfig) {
     this.store.dispatch(
       ControlsActions.editControl({
-        controlId: control.id,
         editedControl: control,
       })
     );
   }
 
-  generateId() {
+  cancelEdit() {
+    this.store.dispatch(ControlsActions.clearSelectedControl());
+  }
+
+  private generateId() {
     let newId;
     const controls = this.store.selectSignal(controlsFeature.selectControls)();
 
-    if (controls.length === 0) return newId = 1;
+    if (controls.length === 0) return (newId = 1);
     if (controls.length > 1)
       return (newId =
         Math.max(...controls.map((control) => Number(control.id))) + 1);
