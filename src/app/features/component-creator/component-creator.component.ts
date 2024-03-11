@@ -13,7 +13,6 @@ import { Store } from '@ngrx/store';
 import { Observable, map, of, take } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
 import { controlsFeature } from '../../store/controls.state';
-import { EditorComponent } from '../editor/editor.component';
 import { ComponentType } from '../models/component-type';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -28,7 +27,6 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
     NgClass,
     JsonPipe,
     CardComponent,
-    EditorComponent,
   ],
   templateUrl: './component-creator.component.html',
   styleUrl: './component-creator.component.css',
@@ -118,16 +116,18 @@ export class ComponentCreatorComponent {
 
   private isValidName(): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      const value = control.value;
-      if (this.isEditMode) return of(null);
+      return of(null);
+      //   const value = control.value;
+      //   if (this.isEditMode) return of(null);
 
-      return this.store.select(controlsFeature.selectControls).pipe(
-        take(1),
-        map((configs) => {
-          const isNameExists = configs.some((config) => config.name === value);
-          return isNameExists ? { nameExists: true } : null;
-        })
-      );
+      //   return this.store.select(controlsFeature.selectControls).pipe(
+      //     take(1),
+      //     map((configs) => {
+      //       const isNameExists = configs.some((config) => config.name === value);
+      //       return isNameExists ? { nameExists: true } : null;
+      //     })
+      //   );
+      // };
     };
   }
 }

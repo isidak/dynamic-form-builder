@@ -14,7 +14,6 @@ import { Subject, map, take, tap, withLatestFrom } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { ControlConfig } from './features/dynamic-control/control-config';
-import { EditorComponent } from './features/editor/editor.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
 import { DynamicComponentConfig } from './features/models/dynamic-component-config';
 import { FormConfigsService } from './services/form-configs.service';
@@ -29,7 +28,6 @@ import { componentsFeature, controlsFeature } from './store/controls.state';
   styleUrl: './app.component.css',
   imports: [
     RouterOutlet,
-    EditorComponent,
     ComponentCreatorComponent,
     FormRendererComponent,
     CardComponent,
@@ -54,7 +52,6 @@ export class AppComponent implements OnInit {
   selectedComponent$ = this.store.select(
     componentsFeature.selectSelectedComponent
   );
-  selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
   components$ = this.store.select(componentsFeature.selectComponents);
