@@ -1,39 +1,41 @@
 <form [formGroup]="form">
   <ng-container *ngIf="importedComponents$ | async as components">
-    <ng-container
-      *ngFor="let component of components; index as i; trackBy: trackById"
-    >
+    <ng-container *ngIf="components.length > 0">
       <ng-container
-        *ngComponentOutlet="
-          component['importedCmp'];
-          inputs: component['inputs']
-        "
+        *ngFor="let component of components; index as i; trackBy: trackById"
       >
+        <ng-container
+          *ngComponentOutlet="
+            component['importedCmp'];
+            inputs: component['inputs']
+          "
+        >
+        </ng-container>
+        <div class="row justify-content-end">
+          <button
+            type="button"
+            class="btn btn-info m-2 col-auto"
+            (click)="selectComponent(component.id)"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger m-2 col-auto"
+            (click)="removeComponent(component.id)"
+          >
+            Remove
+          </button>
+        </div>
       </ng-container>
-      <div class="row justify-content-end">
-        <button
-          type="button"
-          class="btn btn-info m-2 col-auto"
-          (click)="selectComponent(component.id)"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger m-2 col-auto"
-          (click)="removeComponent(component.id)"
-        >
-          Remove
-        </button>
-      </div>
+      <button
+        type="submit"
+        class="btn btn-primary mt-2"
+        [disabled]="!form.valid"
+        (click)="submitForm()"
+      >
+        Submit
+      </button>
     </ng-container>
   </ng-container>
-  <button
-    type="submit"
-    class="btn btn-primary mt-2"
-    [disabled]="!form.valid"
-    (click)="submitForm()"
-  >
-    Submit
-  </button>
 </form>

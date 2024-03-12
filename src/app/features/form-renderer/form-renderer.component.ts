@@ -7,20 +7,19 @@ import {
   NgIf,
 } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   DestroyRef,
-  EnvironmentInjector,
   EventEmitter,
   Input,
   OnInit,
   Output,
-  inject,
+  inject
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, distinctUntilChanged, filter, map } from 'rxjs';
+import { Observable, distinctUntilChanged, map } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
-import { ControlConfig } from '../dynamic-control/control-config';
 
 @Component({
   selector: 'app-form-renderer',
@@ -50,7 +49,7 @@ export class FormRendererComponent implements OnInit {
 
   form = new FormGroup({});
 
-  private injector = inject(EnvironmentInjector);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.importedComponents$ = this.components$.pipe(
@@ -61,9 +60,14 @@ export class FormRendererComponent implements OnInit {
       distinctUntilChanged(
         (prev, curr) => prev.length === 0 && curr.length === 0
       ),
-      // filter((components) => components.length > 0),
       map((components) => this.createComps(components))
     );
+
+    this.form.statusChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.cdr.detectChanges();
+      });
   }
 
   removeComponent(id: string) {
