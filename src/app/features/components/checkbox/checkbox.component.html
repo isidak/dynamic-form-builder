@@ -1,1 +1,11 @@
-<p>checkbox works!</p>
+<form [formGroup]="parentFormGroup">
+    <div class="form-check">
+        <label *ngIf="label" class="form-check-label" [for]="controlName">{{label}}</label>
+        <input
+          type="checkbox"
+          id="controlName"
+          class="form-check-input"
+          [formControlName]="controlName"
+        />
+      </div>
+</form>

@@ -1,8 +1,11 @@
-<form [formGroup]="parentFormGroup" class="form-group">
+<div [formGroup]="parentFormGroup" class="form-group">
   <div class="form-control mt-2" cdkDrag>
     <label class="p-2 form-label" *ngIf="label">{{ label }}</label>
     <input
       [formControlName]="controlName"
+      [type]="type"
+      [min]="min"
+      [max]="max"
       class="form-control"
       [placeholder]="placeholder"
       [ngClass]="{ 'is-invalid': control.invalid && control.touched }"
@@ -15,4 +18,4 @@
       <ng-content></ng-content>
     </div>
   </div>
-</form>
+</div>

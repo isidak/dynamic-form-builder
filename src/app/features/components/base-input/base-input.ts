@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Directive, Input, inject } from '@angular/core';
+import { ChangeDetectorRef, Directive, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import {
   ControlContainer,
   FormControl,
@@ -11,11 +11,13 @@ import {
 @Directive({
   standalone: true,
 })
-export abstract class BaseInput {
+export abstract class BaseInput implements OnInit, OnDestroy{
   @Input({ required: true }) controlName: string | number;
   @Input() type = 'text';
   @Input() label: string;
   @Input() placeholder: string;
+  @Input() min: number;
+  @Input() max: number;
   @Input() readonly = false;
   @Input() autocomplete = 'off';
   @Input() set required(value: true | false) {
@@ -50,5 +52,20 @@ export abstract class BaseInput {
     return this.parentFormGroup.controls[
       this.controlName.toString()
     ] as FormControl;
+  }
+
+  ngOnInit(): void {
+    this.createControl();
+  }
+
+  ngOnDestroy() {
+    this.parentFormGroup.removeControl(this.controlName.toString());
+  }
+
+  protected createControl() {
+    this.parentFormGroup.addControl(
+      this.controlName.toString(),
+      new FormControl('', [...this.validators])
+    );
   }
 }

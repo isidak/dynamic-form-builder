@@ -50,14 +50,15 @@ export class FormConfigsService {
     {
       name: 'file',
       component: async () =>
-        (await import('../features/components/file-input/file-input.component')).FileInputComponent,
-    }, 
+        (await import('../features/components/file-input/file-input.component'))
+          .FileInputComponent,
+    },
     {
       name: 'button',
       component: async () =>
-        (await import('../features/components/button/button.component')).ButtonComponent,
-    }
-    
+        (await import('../features/components/button/button.component'))
+          .ButtonComponent,
+    },
   ];
 
   private components: DynamicComponentConfig[] = [
@@ -70,9 +71,9 @@ export class FormConfigsService {
       name: 'input',
       inputs: {
         type: 'text',
-        controlName: 'first_name',
-        label: 'First Name',
-        placeholder: 'Enter your first name',
+        controlName: 'label',
+        label: 'Label',
+        placeholder: 'Enter label name',
         required: true,
         minLength: 3,
         readonly: false,
@@ -88,13 +89,109 @@ export class FormConfigsService {
       name: 'input',
       inputs: {
         type: 'text',
-        controlName: 'last_name',
-        label: 'Last Name',
-        placeholder: 'Enter your last name',
+        controlName: 'controlName',
+        label: 'Control name',
+        placeholder: 'Enter control name',
         required: true,
         minLength: 3,
         readonly: false,
         autocomplete: 'off',
+      },
+    },
+    {
+      component: async () =>
+        (await import('../features/components/input/input.component'))
+          .InputComponent,
+
+      id: '3',
+      name: 'input',
+      inputs: {
+        type: 'text',
+        controlName: 'placeholder',
+        label: 'Placeholder',
+        placeholder: 'Enter placeholder',
+        required: true,
+        minLength: 3,
+        readonly: false,
+        autocomplete: 'on',
+      },
+    },
+    {
+      component: async () =>
+        (await import('../features/components/input/input.component'))
+          .InputComponent,
+
+      id: '4',
+      name: 'input',
+      inputs: {
+        type: 'number',
+        controlName: 'minLength',
+        label: 'Min Length',
+        min: 0,
+        max: 50,
+        placeholder: 'Enter min length',
+        required: true,
+        autocomplete: 'on',
+      },
+    },
+    {
+      component: async () =>
+        (await import('../features/components/select/select.component'))
+          .SelectComponent,
+      id: '5',
+      name: 'select',
+      inputs: {
+        type: 'text',
+        controlName: 'name',
+        label: 'Choose Component type:',
+        placeholder: 'select a component type',
+        options: [
+          { value: 'input', label: 'Input' },
+          { value: 'select', label: 'Select' },
+          { value: 'checkbox', label: 'Checkbox' },
+          { value: 'textarea', label: 'Textarea' },
+          { value: 'file', label: 'File' },
+        ],
+        required: true,
+      },
+    },
+    {
+      component: async () =>
+        (await import('../features/components/select/select.component'))
+          .SelectComponent,
+      id: '6',
+      name: 'select',
+      inputs: {
+        type: 'text',
+        controlName: 'type',
+        label: 'Choose FormControl type:',
+        placeholder: 'select a control type',
+        options: [
+          { value: 'text', label: 'Text' },
+          { value: 'number', label: 'Number' },
+          { value: 'email', label: 'Email' },
+          { value: 'password', label: 'Password' },
+          { value: 'date', label: 'Date' },
+          { value: 'time', label: 'Time' },
+          { value: 'file', label: 'File' },
+          { value: 'textarea', label: 'Textarea' },
+        ],
+        required: true,
+      },
+    },
+    {
+      component: async () =>
+        (await import('../features/components/checkbox/checkbox.component'))
+          .CheckboxComponent,
+
+      id: '7',
+      name: 'checkbox',
+      inputs: {
+        type: 'checkbox',
+        controlName: 'required',
+        label: 'Required',
+        required: true,
+        autocomplete: 'on',
       },
     },
   ];

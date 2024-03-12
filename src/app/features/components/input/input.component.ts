@@ -11,19 +11,6 @@ import { BaseInput } from '../base-input/base-input';
   templateUrl: './input.component.html',
   styleUrl: './input.component.css',
 })
-export class InputComponent extends BaseInput implements OnInit, OnDestroy {
-  ngOnInit(): void {
-    this.createControl();
-  }
+export class InputComponent extends BaseInput  {
 
-  ngOnDestroy() {
-    this.parentFormGroup.removeControl(this.controlName.toString());
-  }
-
-  protected createControl() {
-    this.parentFormGroup.addControl(
-      this.controlName.toString(),
-      new FormControl('', [...this.validators])
-    );
-  }
 }
