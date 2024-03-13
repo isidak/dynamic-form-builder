@@ -8,17 +8,22 @@ import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
-import { Store } from '@ngrx/store';
+import { Store, select } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, map, take, tap, withLatestFrom } from 'rxjs';
+import { Observable, Subject, filter, map, take, tap, withLatestFrom } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
-import { DynamicComponentConfig } from './features/models/dynamic-component-config';
+import {
+  ComponentTypeNames,
+  IComponentType,
+  IDynamicComponentConfig,
+} from './features/models/dynamic-component-config';
 import { FormConfigsService } from './services/form-configs.service';
 import { CardComponent } from './shared/card/card.component';
 import { ComponentsActions, ControlsActions } from './store/controls.actions';
 import { componentsFeature, controlsFeature } from './store/controls.state';
+import { EditorComponent } from './features/editor/editor.component';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +35,8 @@ import { componentsFeature, controlsFeature } from './store/controls.state';
     ComponentCreatorComponent,
     FormRendererComponent,
     CardComponent,
+    InputComponent,
+    EditorComponent,
     JsonPipe,
     NgIf,
     AsyncPipe,
@@ -38,7 +45,6 @@ import { componentsFeature, controlsFeature } from './store/controls.state';
     NgStyle,
     CdkDragHandle,
     DragDropModule,
-    InputComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -56,7 +62,9 @@ export class AppComponent implements OnInit {
   components$ = this.store.select(componentsFeature.selectComponents);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
 
-  addComponent$ = new Subject<DynamicComponentConfig>();
+  addComponent$ = new Subject<IDynamicComponentConfig>();
+
+  firstStep$: Observable<IComponentType[]>;
 
   ngOnInit(): void {
     this.formConfigService
@@ -100,6 +108,16 @@ export class AppComponent implements OnInit {
         )
       )
       .subscribe();
+
+      this.firstStep$ = this.store.pipe(select(componentsFeature.selectComponentTypes))
+      // .pipe(
+      //   filter((types) => types !== undefined),
+      //   filter((types) => types.length > 0),
+      //   map((types) =>
+      //     types!.find((type) => type['name'] === ComponentTypeNames.Select)
+      //   ),
+      //   tap((type) => console.log('type', type))
+      // );
   }
 
   onEditorSubmit(value: any) {
@@ -108,7 +126,7 @@ export class AppComponent implements OnInit {
       : this.addComponent(value.form);
   }
 
-  addComponent(component: DynamicComponentConfig) {
+  addComponent(component: IDynamicComponentConfig) {
     this.addComponent$.next(component);
   }
 
@@ -129,7 +147,7 @@ export class AppComponent implements OnInit {
     this.store.dispatch(ComponentsActions.removeComponent({ id }));
   }
 
-  saveComponent(component: DynamicComponentConfig) {
+  saveComponent(component: IDynamicComponentConfig) {
     this.store.dispatch(
       ComponentsActions.editComponent({
         editedComponent: component,

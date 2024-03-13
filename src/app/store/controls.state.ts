@@ -1,14 +1,13 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { ComponentType } from '../features/models/component-type';
-import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
+import { IDynamicComponentConfig, IComponentType } from '../features/models/dynamic-component-config';
 import { ComponentsActions, ControlsActions } from './controls.actions';
 
 interface State {
   loading: boolean;
   inputTypes: string[];
   components: any[];
-  componentTypes: ComponentType[] | null;
-  selectedComponent: DynamicComponentConfig | null;
+  componentTypes: IComponentType[];
+  selectedComponent: IDynamicComponentConfig | null;
 }
 
 export const initialState: State = {

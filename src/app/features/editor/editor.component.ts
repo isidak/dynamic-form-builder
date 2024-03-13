@@ -1,152 +1,195 @@
-// import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-// import {
-//   ChangeDetectionStrategy,
-//   Component,
-//   DestroyRef,
-//   EventEmitter,
-//   Input,
-//   OnInit,
-//   Output,
-//   inject,
-// } from '@angular/core';
-// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-// import {
-//   AbstractControl,
-//   AsyncValidatorFn,
-//   FormBuilder,
-//   FormGroup,
-//   ReactiveFormsModule,
-//   ValidationErrors,
-//   Validators,
-// } from '@angular/forms';
-// import { Store } from '@ngrx/store';
-// import { Observable, map, of, take } from 'rxjs';
-// import { CardComponent } from '../../shared/card/card.component';
-// import { controlsFeature } from '../../store/controls.state';
-// import { ControlConfig } from '../dynamic-control/control-config';
+import {
+  AsyncPipe,
+  JsonPipe,
+  NgClass,
+  NgComponentOutlet,
+  NgFor,
+  NgIf,
+  NgStyle,
+} from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  EventEmitter,
+  Input,
+  Output,
+  QueryList,
+  TemplateRef,
+  ViewChild,
+  ViewChildren,
+  ViewContainerRef,
+  inject,
+} from '@angular/core';
+import {
+  AbstractControl,
+  AsyncValidatorFn,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+} from '@angular/forms';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, filter, map, of, tap } from 'rxjs';
+import { CardComponent } from '../../shared/card/card.component';
+import { FormRendererComponent } from '../form-renderer/form-renderer.component';
+import {
+  ComponentTypeNames,
+  IComponentType,
+  IDynamicComponentConfig,
+} from '../models/dynamic-component-config';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-// @Component({
-//   selector: 'app-editor',
-//   standalone: true,
-//   templateUrl: './editor.component.html',
-//   imports: [
-//     ReactiveFormsModule,
-//     NgIf,
-//     NgFor,
-//     NgStyle,
-//     NgClass,
-//     JsonPipe,
-//     CardComponent,
-//   ],
-//   changeDetection: ChangeDetectionStrategy.OnPush,
-// })
-// export class EditorComponent implements OnInit {
-//   @Input() set selectedControl(value: ControlConfig | null) {
-//     if (!this.editorForm) return;
-//     value === null ? (this.isEditMode = false) : (this.isEditMode = true);
-//     this.patchForm(value!);
-//   }
-//   @Output() formValue = new EventEmitter();
-//   @Input() inputTypes: string[] | null = [];
+@Component({
+  selector: 'app-editor',
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    FormRendererComponent,
+    CardComponent,
+    NgComponentOutlet,
+    NgFor,
+    JsonPipe,
+    AsyncPipe,
+    NgIf,
+  ],
+  templateUrl: './editor.component.html',
+})
+export class EditorComponent {
+  @Input() componentTypes: IComponentType[] | null = [];
+  @Input() inputTypes: string[] | null = [];
+  @Input() componentType$: Observable<IComponentType[]>;
 
-//   private store = inject(Store);
-//   private fb = inject(FormBuilder);
-//   private destroyRef = inject(DestroyRef);
+  @Output() formValue = new EventEmitter();
+  @Output() editCanceled = new EventEmitter();
 
-//   editorForm: FormGroup;
+  @ViewChild('placeholder', { read: ViewContainerRef }) placeholder: ViewContainerRef;
 
-//   isEditMode = false;
+  @ViewChildren(TemplateRef) templates: QueryList<TemplateRef<any>>;
 
-//   isSubmit = false;
-//   get type() {
-//     return this.editorForm.get('type');
-//   }
-//   get name() {
-//     return this.editorForm.get('name');
-//   }
-//   get label() {
-//     return this.editorForm.get('label');
-//   }
-//   get placeholder() {
-//     return this.editorForm.get('placeholder');
-//   }
+  private store = inject(Store);
+  private fb = inject(FormBuilder);
+  private destroyRef = inject(DestroyRef);
+  firstStepComponent$ = new Subject<IDynamicComponentConfig>();
+  nextStepComponent$ = new Subject<IDynamicComponentConfig>();
+  formArray: any = [];
+  createdComponentIds: any[] = [];
+  numberOfCreatedComponents = 0;
 
-//   ngOnInit(): void {
-//     this.editorForm = this.createForm();
-//     this.formTypeChangeSub();
-//   }
+  form = new FormGroup({});
 
-//   patchForm(control: ControlConfig | null) {
-//     control === null
-//       ? this.editorForm.reset()
-//       : this.editorForm.patchValue(control);
-//   }
+  isEditMode = false;
 
-//   formTypeChangeSub() {
-//     this.editorForm
-//       .get('type')
-//       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
-//       .subscribe((value) => {
-//         if (value === 'submit') {
-//           this.isSubmit = true;
-//           for (const key in this.editorForm.controls) {
-//             if (key !== 'type') {
-//               this.editorForm.get(key)?.disable();
-//             }
-//           }
-//         } else {
-//           this.isSubmit = false;
-//           for (const key in this.editorForm.controls) {
-//             if (key !== 'type') {
-//               this.editorForm.get(key)?.enable();
-//             }
-//           }
-//         }
-//       });
-//   }
+  isSubmit = false;
+  // get type() {
+  //   return this.form.get('type');
+  // }
+  // get name() {
+  //   return this.form.get('name');
+  // }
+  // get label() {
+  //   return this.form.get('label');
+  // }
+  // get placeholder() {
+  //   return this.form.get('placeholder');
+  // }
 
-//   createForm(): FormGroup<any> {
-//     return this.fb.group({
-//       id: [''],
-//       name: [
-//         '',
-//         [Validators.required, Validators.minLength(3)],
-//         [this.isValidName()],
-//       ],
-//       label: ['', [Validators.required, Validators.minLength(3)]],
-//       type: ['', Validators.required],
-//       placeholder: ['', [Validators.required, Validators.minLength(3)]],
-//     });
-//   }
+  ngOnInit(): void {
+    this.componentType$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter((types) => types !== undefined),
+        filter((types) => types.length > 0),
+        map((types) =>
+          types?.find((type) => type['name'] === ComponentTypeNames.Select)
+        ),
+        tap((type) => this.createCmp(type))
+      )
+      .subscribe();
 
-//   handleSubmit() {
-//     if (this.editorForm.valid) {
-//       this.formValue.emit({
-//         formValue: this.editorForm.value,
-//         isEdit: this.isEditMode,
-//       });
-//       this.editorForm.reset();
-//       this.isEditMode = false;
-//     }
-//   }
+      
 
-//   cancelEdit() {
-//     this.editorForm.reset();
-//     this.isEditMode = false;
-//   }
+    this.nextStepComponent$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((component) => {
+          this.formArray.push(component);
+          console.log(component.id, this.formArray);
+        })
+      )
+      .subscribe();
+  }
 
-//   private isValidName(): AsyncValidatorFn {
-//     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-//       const value = control.value;
-//       if (this.isEditMode) return of(null);
+  async createCmp(component?: IComponentType) {
+    if (component === undefined) return;
+    const newCmp = {
+      ...component,
+      importedCmp: await component.component(),
+    };
+    this.addComponent(newCmp);
+    this.numberOfCreatedComponents++;
+    this.createdComponentIds.push({step: this.numberOfCreatedComponents, id: newCmp.id});
+    this.firstStepComponent$.next(newCmp);
+  }
 
-//       return this.store.select(controlsFeature.selectControls).pipe(
-//         take(1),
-//         map((configs) => {
-//           const isNameExists = configs.some((config) => config.name === value);
-//           return isNameExists ? { nameExists: true } : null;
-//         })
-//       );
-//     };
-//   }
-// }
+  addComponent(cmp: IDynamicComponentConfig) {
+    const addedComponent = this.placeholder.createComponent(cmp.importedCmp);
+    // addedComponent.setInput(cmp.inputs);
+    
+  }
+
+  createComps(components: any[]) {
+    let newComponents: any[] = [];
+    components.forEach(async (component) => {
+      newComponents.push(await this.importComponent(component));
+    });
+
+    return newComponents;
+  }
+
+  async importComponent(configs: any) {
+    const newCmp = {
+      ...configs,
+      importedCmp: await configs['component'](),
+    };
+
+    return newCmp;
+  }
+
+  patchForm(control: IDynamicComponentConfig | null) {
+    control === null ? this.form.reset() : this.form.patchValue(control);
+  }
+
+  handleSubmit() {
+    if (this.form.valid) {
+      this.formValue.emit({
+        form: this.form.value,
+        isEdit: this.isEditMode,
+      });
+      this.form.reset();
+      this.isEditMode = false;
+    }
+  }
+
+  cancelEdit() {
+    this.form.reset();
+    this.isEditMode = false;
+    this.editCanceled.emit();
+  }
+
+  private isValidName(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      return of(null);
+      //   const value = control.value;
+      //   if (this.isEditMode) return of(null);
+
+      //   return this.store.select(controlsFeature.selectControls).pipe(
+      //     take(1),
+      //     map((configs) => {
+      //       const isNameExists = configs.some((config) => config.name === value);
+      //       return isNameExists ? { nameExists: true } : null;
+      //     })
+      //   );
+      // };
+    };
+  }
+}

@@ -10,11 +10,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { Observable, map, of, take } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
-import { controlsFeature } from '../../store/controls.state';
-import { ComponentType } from '../models/component-type';
-import { DynamicComponentConfig } from '../models/dynamic-component-config';
+import {
+  IComponentType,
+  IDynamicComponentConfig,
+} from '../models/dynamic-component-config';
 
 @Component({
   selector: 'app-component-creator',
@@ -32,7 +33,7 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
   styleUrl: './component-creator.component.css',
 })
 export class ComponentCreatorComponent {
-  @Input() set selectedComponent(value: DynamicComponentConfig | null) {
+  @Input() set selectedComponent(value: IDynamicComponentConfig | null) {
     if (!this.form) return;
     value === null ? (this.isEditMode = false) : (this.isEditMode = true);
     this.patchForm(value!);
@@ -40,7 +41,7 @@ export class ComponentCreatorComponent {
   @Output() formValue = new EventEmitter();
   @Output() editCanceled = new EventEmitter();
   @Input() inputTypes: string[] | null = [];
-  @Input() componentTypes: ComponentType[] | null = [];
+  @Input() componentTypes: IComponentType[] | null = [];
 
   private store = inject(Store);
   private fb = inject(FormBuilder);
@@ -67,7 +68,7 @@ export class ComponentCreatorComponent {
     this.form = this.createForm();
   }
 
-  patchForm(control: DynamicComponentConfig | null) {
+  patchForm(control: IDynamicComponentConfig | null) {
     control === null ? this.form.reset() : this.form.patchValue(control);
   }
 

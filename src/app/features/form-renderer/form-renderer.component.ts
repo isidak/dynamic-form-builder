@@ -7,7 +7,6 @@ import {
   NgIf,
 } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   DestroyRef,
@@ -15,13 +14,14 @@ import {
   Input,
   OnInit,
   Output,
-  inject,
+  inject
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Observable, distinctUntilChanged, map } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
+import { CardComponent } from '../../shared/card/card.component';
 
 @Component({
   selector: 'app-form-renderer',
@@ -31,6 +31,7 @@ import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
     DragDropModule,
     InputComponent,
     EditWrapperComponent,
+    CardComponent,
     NgComponentOutlet,
     NgFor,
     JsonPipe,
@@ -41,6 +42,7 @@ import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
 })
 export class FormRendererComponent implements OnInit {
   @Input() components$: Observable<any[]>;
+  @Input() isEditMode = true;
 
   @Output() submittedForm = new EventEmitter();
   @Output() selected = new EventEmitter();
@@ -82,7 +84,6 @@ export class FormRendererComponent implements OnInit {
   }
 
   submitForm() {
-    console.log(this.form.value);
     this.submittedForm.emit(this.form.value);
   }
 

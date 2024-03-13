@@ -1,30 +1,43 @@
 <form [formGroup]="form" class="container">
   <ng-container *ngIf="importedComponents$ | async as components">
     <ng-container *ngIf="components.length > 0">
-      <ng-container
-        *ngFor="let component of components; index as i; trackBy: trackById"
-      >
-        <app-edit-wrapper
-          (remove)="removeComponent(component.id)"
-          (edit)="selectComponent(component.id)"
+      <app-card>
+        <ng-container
+          *ngFor="let component of components; index as i; trackBy: trackById"
         >
-          <ng-container
-            *ngComponentOutlet="
-              component['importedCmp'];
-              inputs: component['inputs']
-            "
+          <app-edit-wrapper
+            *ngIf="isEditMode; else displayMode"
+            (remove)="removeComponent(component.id)"
+            (edit)="selectComponent(component.id)"
           >
-          </ng-container>
-        </app-edit-wrapper>
-      </ng-container>
-      <button
-        type="submit"
-        class="btn btn-primary mt-2"
-        [disabled]="!form.valid"
-        (click)="submitForm()"
-      >
-        Submit
-      </button>
+            <ng-container
+              *ngComponentOutlet="
+                component['importedCmp'];
+                inputs: component['inputs']
+              "
+            >
+            </ng-container>
+          </app-edit-wrapper>
+
+          <ng-template #displayMode>
+            <ng-container
+              *ngComponentOutlet="
+                component['importedCmp'];
+                inputs: component['inputs']
+              "
+            >
+            </ng-container>
+          </ng-template>
+        </ng-container>
+        <button
+          type="submit"
+          class="btn btn-primary mt-2"
+          [disabled]="!form.valid"
+          (click)="submitForm()"
+        >
+          {{ isEditMode ? "Save Form" : "Submit" }}
+        </button>
+      </app-card>
     </ng-container>
   </ng-container>
 </form>
