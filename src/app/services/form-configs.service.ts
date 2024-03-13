@@ -106,7 +106,7 @@ export class FormConfigsService {
       component: async () =>
         (await import('../features/components/input/input.component'))
           .InputComponent,
-      inputs: this.COMPONENT_TYPE_INPUTS_CONFIG,
+      inputs: this.COMPONENT_CONTROL_NAME_INPUTS_CONFIG,
       inputsList: [
         {
           type: ComponentTypeNames.Input,

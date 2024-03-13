@@ -1,35 +1,44 @@
 import {
   AsyncPipe,
   JsonPipe,
-  NgClass,
   NgComponentOutlet,
   NgFor,
   NgIf,
-  NgStyle,
 } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
+  ComponentRef,
   DestroyRef,
   EventEmitter,
   Input,
   Output,
   QueryList,
-  TemplateRef,
   ViewChild,
   ViewChildren,
   ViewContainerRef,
   inject,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   AsyncValidatorFn,
-  FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   ValidationErrors,
 } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { Observable, Subject, filter, map, of, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  filter,
+  map,
+  of,
+  scan,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
 import { FormRendererComponent } from '../form-renderer/form-renderer.component';
 import {
@@ -37,7 +46,6 @@ import {
   IComponentType,
   IDynamicComponentConfig,
 } from '../models/dynamic-component-config';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-editor',
@@ -54,28 +62,38 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   ],
   templateUrl: './editor.component.html',
 })
-export class EditorComponent {
-  @Input() componentTypes: IComponentType[] | null = [];
+export class EditorComponent implements AfterViewInit {
+  @Input() componentTypes$: Observable<IComponentType[]>;
   @Input() inputTypes: string[] | null = [];
   @Input() componentType$: Observable<IComponentType[]>;
 
   @Output() formValue = new EventEmitter();
   @Output() editCanceled = new EventEmitter();
 
-  @ViewChild('placeholder', { read: ViewContainerRef }) placeholder: ViewContainerRef;
+  @ViewChild('placeholder', { read: ViewContainerRef })
+  placeholder: ViewContainerRef;
+  @ViewChildren(NgComponentOutlet) components: QueryList<ComponentRef<any>>;
 
-  @ViewChildren(TemplateRef) templates: QueryList<TemplateRef<any>>;
-
-  private store = inject(Store);
-  private fb = inject(FormBuilder);
+  form = new FormGroup({});
   private destroyRef = inject(DestroyRef);
-  firstStepComponent$ = new Subject<IDynamicComponentConfig>();
+  // private controlContainer = inject(FormGroupDirective).form as FormGroup;
+  displayComponent$ = new BehaviorSubject<IDynamicComponentConfig[]>([]);
   nextStepComponent$ = new Subject<IDynamicComponentConfig>();
   formArray: any = [];
   createdComponentIds: any[] = [];
   numberOfCreatedComponents = 0;
-
-  form = new FormGroup({});
+  addedComponents$ = new BehaviorSubject<ComponentRef<any>[]>([]);
+  private _currentStepComponentRefs = new BehaviorSubject<any[]>([]);
+  currentStepComponentRefs$ = this._currentStepComponentRefs
+    .asObservable()
+    .pipe(
+      scan((acc, curr) => {
+        return [...acc, curr];
+      })
+    );
+  currentStep$ = new BehaviorSubject<number>(1);
+  stepComponentMap$ = new BehaviorSubject<any[]>([]);
+  displayedComponentsArray: any[] = [];
 
   isEditMode = false;
 
@@ -94,6 +112,7 @@ export class EditorComponent {
   // }
 
   ngOnInit(): void {
+
     this.componentType$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -106,15 +125,63 @@ export class EditorComponent {
       )
       .subscribe();
 
-      
+    this.addedComponents$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter((components) => components.length > 0),
+        map(
+          (components: any[]) => components[components.length - 1]._componentRef
+        ),
+        withLatestFrom(this.currentStep$),
+        tap(([component, step]) =>
+          this._currentStepComponentRefs.next([{ component, step }])
+        ),
+        switchMap(([component, step]) => {
+          const formControl = this.form.get(
+            component.instance.controlName.toString()
+          );
+
+          if (formControl) {
+            return formControl.valueChanges;
+          } else {
+            return of(component);
+          }
+        }),
+        tap((componentType) => {
+          this.nextStepComponent$.next(componentType);
+        })
+      )
+      .subscribe((components) => {
+        console.log('components', components);
+      });
 
     this.nextStepComponent$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap((component) => {
-          this.formArray.push(component);
-          console.log(component.id, this.formArray);
-        })
+        withLatestFrom(this.componentTypes$),
+        map(([name, componentTypes]) => {
+          const componentType = componentTypes.find(
+            (type) => type.name === name.toString()
+          );
+          console.log('componentTypes', componentType);
+          return componentType;
+        }),
+        tap((cmp) => this.createCmp(cmp))
+      )
+      .subscribe();
+
+    this.currentStepComponentRefs$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((step) => {
+        console.log('step', step);
+      });
+  }
+
+  ngAfterViewInit(): void {
+    this.components.changes
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((components) => this.addedComponents$.next(components.toArray()))
       )
       .subscribe();
   }
@@ -125,17 +192,36 @@ export class EditorComponent {
       ...component,
       importedCmp: await component.component(),
     };
-    this.addComponent(newCmp);
+    // this.addComponent(newCmp);
     this.numberOfCreatedComponents++;
-    this.createdComponentIds.push({step: this.numberOfCreatedComponents, id: newCmp.id});
-    this.firstStepComponent$.next(newCmp);
+    this.createdComponentIds.push({
+      step: this.numberOfCreatedComponents,
+      id: newCmp.id,
+    });
+    const currentCmps = this.displayComponent$.getValue();
+    this.displayComponent$.next([...currentCmps, newCmp]);
   }
 
-  addComponent(cmp: IDynamicComponentConfig) {
-    const addedComponent = this.placeholder.createComponent(cmp.importedCmp);
-    // addedComponent.setInput(cmp.inputs);
-    
-  }
+  // addComponent(cmp: IDynamicComponentConfig) {
+  //   console.log('cmp', cmp);
+  //   const addedComponent = this.placeholder.createComponent(cmp.importedCmp);
+  //   addedComponent.setInput('inputs', cmp.inputs);
+  //   addedComponent.setInput('options', cmp.inputs.options);
+  //   this.addedComponents.push(addedComponent);
+
+  //   addedComponent.onDestroy(() => {
+  //     const cmpIndex = this.addedComponents.findIndex(
+  //       (cmp) => cmp === addedComponent
+  //     );
+  //     this.addedComponents = [
+  //       ...this.addedComponents.slice(0, cmpIndex),
+  //       ...this.addedComponents.slice(
+  //         cmpIndex + 1,
+  //         this.addedComponents.length
+  //       ),
+  //     ];
+  //   });
+  // }
 
   createComps(components: any[]) {
     let newComponents: any[] = [];

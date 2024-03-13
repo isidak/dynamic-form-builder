@@ -9,7 +9,7 @@
     <div class="col-lg-4" cdkDrag>
       <app-editor
         [componentType$]="firstStep$" 
-        [componentTypes]="componentTypes$ | async"
+        [componentTypes$]="componentTypes$"
         [inputTypes]="inputTypes$ | async"
         (formValue)="onEditorSubmit($event)"
         (editCanceled)="cancelEdit()"

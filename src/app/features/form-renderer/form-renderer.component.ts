@@ -7,18 +7,22 @@ import {
   NgIf,
 } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectorRef,
   Component,
+  ComponentRef,
   DestroyRef,
   EventEmitter,
   Input,
   OnInit,
   Output,
-  inject
+  QueryList,
+  ViewChildren,
+  inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Observable, distinctUntilChanged, map } from 'rxjs';
+import { Observable, distinctUntilChanged, map, tap } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
 import { CardComponent } from '../../shared/card/card.component';
@@ -40,13 +44,14 @@ import { CardComponent } from '../../shared/card/card.component';
   ],
   templateUrl: './form-renderer.component.html',
 })
-export class FormRendererComponent implements OnInit {
+export class FormRendererComponent implements OnInit, AfterViewInit {
   @Input() components$: Observable<any[]>;
   @Input() isEditMode = true;
 
   @Output() submittedForm = new EventEmitter();
   @Output() selected = new EventEmitter();
   @Output() remove = new EventEmitter();
+  @ViewChildren(NgComponentOutlet) components: QueryList<ComponentRef<any>>;
 
   importedComponents$: Observable<any[]>;
 
@@ -73,6 +78,17 @@ export class FormRendererComponent implements OnInit {
       .subscribe(() => {
         this.cdr.detectChanges();
       });
+  }
+
+  ngAfterViewInit(): void {
+    // this.components.changes
+    //   .pipe(
+    //     takeUntilDestroyed(this.destroyRef),
+    //     tap((components: any) =>
+    //       console.log('components', components.toArray())
+    //     )
+    //   )
+    //   .subscribe();
   }
 
   removeComponent(id: string) {

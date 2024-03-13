@@ -2,13 +2,32 @@
   [title]="isEditMode ? 'Edit Control' : 'Generate FormControl Component'"
 >
   <form [formGroup]="form" (ngSubmit)="handleSubmit()">
-   
-<ng-container *ngIf="(firstStepComponent$ | async) as component"
->
-<ng-container #placeholder></ng-container>
+    <ng-container *ngIf="componentTypes$ | async">
+      <ng-container *ngIf="displayComponent$ | async as components"
+      >
+      <ng-container *ngFor="let component of components">
+        <ng-container
+        #component.id
+        *ngComponentOutlet="component['importedCmp']; inputs: component.inputs"
+      >
+      </ng-container>
+      </ng-container>
+  
+    </ng-container>
 
-</ng-container>
+    <ng-container *ngFor="let cmp of displayedComponentsArray">
+      <ng-container
+        #cmp.id
+        *ngComponentOutlet="cmp['importedCmp']; inputs: cmp.inputs"
+      >
+      </ng-container>
+    </ng-container>
+
+  </ng-container>
+   
     
+
+    <!-- <ng-container #placeholder></ng-container> -->
 
     <div class="form-group mt-2">
       <button

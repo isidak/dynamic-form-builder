@@ -7,11 +7,22 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { IBaseInput } from '../../models/dynamic-component-config';
 
 @Directive({
   standalone: true,
 })
 export abstract class BaseInput implements OnInit, OnDestroy{
+  @Input() set inputs(value: IBaseInput) {
+    this.controlName = value.controlName;
+    this.type = value.type;
+    this.label = value.label;
+    this.placeholder = value.placeholder || '';
+    (value.min) ? this.min = value.min : 0;
+    (value.max && value?.max > 0) ? this.max = value.max : null;
+    (value.readonly) ? this.readonly = value.readonly : false;
+    (value.autocomplete) ? this.autocomplete = value.autocomplete : 'off'; 
+  }
   @Input({ required: true }) controlName: string | number;
   @Input() type = 'text';
   @Input() label: string;
