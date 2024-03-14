@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
   );
   displayGeneratedConfigs = false;
   inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
-  components$ = this.store.select(componentsFeature.selectComponents);
+  components$ = this.store.select(componentsFeature.selectAll);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
 
   addComponent$ = new Subject<DynamicComponentConfig>();
@@ -143,12 +143,13 @@ export class AppComponent implements OnInit {
 
   generateId() {
     let newId;
-    const components = this.store.selectSignal(
-      componentsFeature.selectComponents
-    )();
+    const components = this.store.selectSignal(componentsFeature.selectAll)();
+    // selectSignal(
+    //   componentsFeature.selectComponents
+    // )();
     console.log('id', components);
 
-    if (components.length === 0) return (newId = 1);
+    if (components === null || components.length === 0) return (newId = 1);
     if (components.length > 1)
       return (newId =
         Math.max(...components.map((component) => Number(component.id))) + 1);

@@ -32,7 +32,7 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
   styleUrl: './component-creator.component.css',
 })
 export class ComponentCreatorComponent {
-  @Input() set selectedComponent(value: DynamicComponentConfig | null) {
+  @Input() set selectedComponent(value: DynamicComponentConfig | null | undefined) {
     if (!this.form) return;
     value === null ? (this.isEditMode = false) : (this.isEditMode = true);
     this.patchForm(value!);

@@ -1,26 +1,36 @@
-import { createFeature, createReducer, on } from '@ngrx/store';
+import { createFeature, createReducer, createSelector, on, select } from '@ngrx/store';
 import { ComponentType } from '../features/models/component-type';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
 import { ComponentsActions, ControlsActions } from './controls.actions';
+import { Comparer, EntityAdapter, EntityState, createEntityAdapter } from '@ngrx/entity';
 
-interface State {
+export interface State extends EntityState<DynamicComponentConfig> {
   loading: boolean;
   inputTypes: string[];
-  components: any[];
   componentTypes: ComponentType[] | null;
-  selectedComponent: DynamicComponentConfig | null;
+  selectedComponentId: string | null,
 }
 
-export const initialState: State = {
+const sortComparer: Comparer<DynamicComponentConfig> = (c1, c2) => c1.id.localeCompare(c2.id);
+
+const adapter: EntityAdapter<DynamicComponentConfig> =
+  createEntityAdapter<DynamicComponentConfig>({sortComparer});
+
+export const initialState: State = adapter.getInitialState({
   loading: false,
   inputTypes: [],
-  components: [],
   componentTypes: [],
-  selectedComponent: null,
-};
+ 
+  selectedComponentId: null,
+});
+
+export const enum StateFeatures {
+  Controls = 'controls',
+  Components = 'components',
+}
 
 export const controlsFeature = createFeature({
-  name: 'controls',
+  name: StateFeatures.Controls,
   reducer: createReducer(
     initialState,
     on(ControlsActions.setInputTypes, (state, { inputTypes }) => ({
@@ -31,43 +41,48 @@ export const controlsFeature = createFeature({
 });
 
 export const componentsFeature = createFeature({
-  name: 'components',
+  name: StateFeatures.Components,
   reducer: createReducer(
     initialState,
-    on(ComponentsActions.setComponents, (state, { components }) => ({
-      ...state,
-      components: [...components],
-    })),
+    on(ComponentsActions.setComponents, (state, { components }) => {
+      return adapter.setAll(components, state);
+    }),
     on(ComponentsActions.setComponentTypes, (state, { componentTypes }) => ({
       ...state,
       componentTypes,
     })),
-    on(ComponentsActions.addComponent, (state, { component }) => ({
-      ...state,
-      components: [...state.components, component],
-    })),
-    on(ComponentsActions.removeComponent, (state, { id: componentId }) => ({
-      ...state,
-      components: state.components.filter(
-        (component) => component.id !== componentId
-      ),
-    })),
-    on(ComponentsActions.editComponent, (state, { editedComponent }) => ({
-      ...state,
-      components: state.components.map((component) => {
-        if (component.id === editedComponent.id) return editedComponent;
-        return component;
-      }),
-    })),
+    on(ComponentsActions.addComponent, (state, { component }) => {
+      return adapter.addOne(component, state);
+    }),
+    on(ComponentsActions.removeComponent, (state, { id: componentId }) => {
+      return adapter.removeOne(componentId, state);
+    }),
+    on(ComponentsActions.editComponent, (state, { editedComponent }) => {
+      return adapter.updateOne(
+        { id: editedComponent.id, changes: editedComponent },
+        state
+      );
+    }),
     on(ComponentsActions.selectComponent, (state, { id }) => ({
       ...state,
-      selectedComponent: state.components.find(
-        (component) => component.id === id
-      ),
+      selectedComponentId: id,
     })),
     on(ComponentsActions.clearSelectedComponent, (state) => ({
       ...state,
       selectedComponent: null,
     }))
   ),
+  extraSelectors: ({ selectComponentsState, selectEntities, selectSelectedComponentId }) => ({
+    ...adapter.getSelectors(selectComponentsState),
+  
+  selectIsComponentSelected: createSelector(
+    selectSelectedComponentId,
+    (selectedId) => selectedId !== null
+  ),
+  selectSelectedComponent: createSelector(
+    selectSelectedComponentId,
+    selectEntities,
+    (selectedId, entities ) => (selectedId ? entities[selectedId] : null)
+  ),
+}),
 });
