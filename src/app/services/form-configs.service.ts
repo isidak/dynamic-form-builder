@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, delay, of } from 'rxjs';
 import { ComponentType } from '../features/models/component-type';
-import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
+import { ComponentTypeNames, DynamicComponentConfig, InputTypes } from '../features/models/dynamic-component-config';
 
 @Injectable({
   providedIn: 'root',
@@ -9,13 +9,13 @@ import { DynamicComponentConfig } from '../features/models/dynamic-component-con
 export class FormConfigsService {
   private componentTypes: ComponentType[] = [
     {
-      name: 'input',
+      name: ComponentTypeNames.Input,
       component: async () =>
         (await import('../features/components/input/input.component'))
           .InputComponent,
     },
     {
-      name: 'select',
+      name: ComponentTypeNames.Select,
       component: async () =>
         (await import('../features/components/select/select.component'))
           .SelectComponent,
@@ -26,13 +26,13 @@ export class FormConfigsService {
     //     (await import('../features/components/radio/radio.component')).RadioComponent,
     // },
     {
-      name: 'checkbox',
+      name: ComponentTypeNames.Checkbox,
       component: async () =>
         (await import('../features/components/checkbox/checkbox.component'))
           .CheckboxComponent,
     },
     {
-      name: 'textarea',
+      name: ComponentTypeNames.Textarea,
       component: async () =>
         (await import('../features/components/textarea/textarea.component'))
           .TextareaComponent,
@@ -48,17 +48,17 @@ export class FormConfigsService {
     //     (await import('../features/components/time/time.component')).TimeComponent,
     // },
     {
-      name: 'file',
+      name: ComponentTypeNames.File,
       component: async () =>
         (await import('../features/components/file-input/file-input.component'))
           .FileInputComponent,
     },
-    {
-      name: 'button',
-      component: async () =>
-        (await import('../features/components/button/button.component'))
-          .ButtonComponent,
-    },
+    // {
+    //   name: 'button',
+    //   component: async () =>
+    //     (await import('../features/components/button/button.component'))
+    //       .ButtonComponent,
+    // },
   ];
 
   private components: DynamicComponentConfig[] = [
@@ -68,9 +68,9 @@ export class FormConfigsService {
           .InputComponent,
 
       id: '1',
-      name: 'input',
+      name: ComponentTypeNames.Input,
       inputs: {
-        type: 'text',
+        type: InputTypes.Text,
         controlName: 'label',
         label: 'Label',
         placeholder: 'Enter label name',
@@ -86,9 +86,9 @@ export class FormConfigsService {
           .InputComponent,
 
       id: '2',
-      name: 'input',
+      name: ComponentTypeNames.Input,
       inputs: {
-        type: 'text',
+        type: InputTypes.Text,
         controlName: 'controlName',
         label: 'Control name',
         placeholder: 'Enter control name',
@@ -104,9 +104,9 @@ export class FormConfigsService {
           .InputComponent,
 
       id: '3',
-      name: 'input',
+      name: ComponentTypeNames.Input,
       inputs: {
-        type: 'text',
+        type: InputTypes.Text,
         controlName: 'placeholder',
         label: 'Placeholder',
         placeholder: 'Enter placeholder',
@@ -122,9 +122,9 @@ export class FormConfigsService {
           .InputComponent,
 
       id: '4',
-      name: 'input',
+      name: ComponentTypeNames.Input,
       inputs: {
-        type: 'number',
+        type: InputTypes.Number,
         controlName: 'minLength',
         label: 'Min Length',
         min: 0,
@@ -139,9 +139,9 @@ export class FormConfigsService {
         (await import('../features/components/select/select.component'))
           .SelectComponent,
       id: '5',
-      name: 'select',
+      name: ComponentTypeNames.Select,
       inputs: {
-        type: 'text',
+        type: InputTypes.Text,
         controlName: 'name',
         label: 'Choose Component type:',
         placeholder: 'select a component type',
@@ -160,9 +160,9 @@ export class FormConfigsService {
         (await import('../features/components/select/select.component'))
           .SelectComponent,
       id: '6',
-      name: 'select',
+      name: ComponentTypeNames.Select,
       inputs: {
-        type: 'text',
+        type: InputTypes.Text,
         controlName: 'type',
         label: 'Choose FormControl type:',
         placeholder: 'select a control type',
@@ -185,9 +185,9 @@ export class FormConfigsService {
           .CheckboxComponent,
 
       id: '7',
-      name: 'checkbox',
+      name: ComponentTypeNames.Checkbox,
       inputs: {
-        type: 'checkbox',
+        type: InputTypes.Checkbox,
         controlName: 'required',
         label: 'Required',
         required: true,
@@ -196,16 +196,7 @@ export class FormConfigsService {
     },
   ];
 
-  private inputTypes = [
-    'text',
-    'number',
-    'email',
-    'password',
-    'date',
-    'time',
-    'file',
-    'textarea',
-  ];
+  private inputTypes: InputTypes[] = [...Object.values(InputTypes)];
 
   getComponents(): Observable<any[]> {
     return of(this.components).pipe(delay(1));
