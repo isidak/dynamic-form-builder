@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Observable, delay, of } from 'rxjs';
 import { ComponentType } from '../features/models/component-type';
-import { ComponentTypeNames, DynamicComponentConfig, InputTypes } from '../features/models/dynamic-component-config';
+import {
+  ComponentTypeNames,
+  DynamicComponentConfig,
+  InputTypes,
+} from '../features/models/dynamic-component-config';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FormConfigsService {
+export class DynamicComponentsService {
   private componentTypes: ComponentType[] = [
     {
       name: ComponentTypeNames.Input,
@@ -200,9 +204,6 @@ export class FormConfigsService {
 
   getComponents(): Observable<any[]> {
     return of(this.components).pipe(delay(1));
-  }
-  getComponentTypes(): Observable<ComponentType[]> {
-    return of(this.componentTypes).pipe(delay(1));
   }
 
   submitForm(value: any) {

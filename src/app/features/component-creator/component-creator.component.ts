@@ -12,7 +12,7 @@ import {
 import { Store } from '@ngrx/store';
 import { Observable, map, of, take } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
-import { controlsFeature } from '../../store/app.state';
+import { inputsFeature } from '../../store/app.state';
 import { ComponentType } from '../models/component-type';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -44,7 +44,6 @@ export class ComponentCreatorComponent {
   @Input() inputTypes: string[] | null = [];
   @Input() componentTypes: ComponentType[] | null = [];
 
-  private store = inject(Store);
   private fb = inject(FormBuilder);
 
   form: FormGroup;

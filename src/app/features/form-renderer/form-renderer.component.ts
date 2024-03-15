@@ -18,7 +18,8 @@ import {
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule} from '@angular/forms';
+import memo from 'memo-decorator';
 import { Observable, distinctUntilChanged, map } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';

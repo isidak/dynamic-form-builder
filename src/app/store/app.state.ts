@@ -7,9 +7,14 @@ import {
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { ComponentType } from '../features/models/component-type';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
-import { ComponentsActions, ControlsActions } from './app.actions';
+import {
+  ComponentsAPIActions,
+  ComponentsActions,
+  InputTypesAPIActions,
+  InputTypesActions,
+} from './app.actions';
 
-interface ControlTypesState {
+interface InputTypesState {
   inputTypes: string[];
 }
 
@@ -20,7 +25,7 @@ interface ComponentsState {
   selectedComponentId: string | null;
 }
 
-const controlTypesInitialState: ControlTypesState = {
+const inputTypesInitialState: InputTypesState = {
   inputTypes: [],
 };
 
@@ -38,15 +43,15 @@ const componentsInitialState: ComponentsState = {
 };
 
 const enum StateFeatures {
-  Controls = 'controls',
+  Inputs = 'inputs',
   Components = 'components',
 }
 
-export const controlsFeature = createFeature({
-  name: StateFeatures.Controls,
+export const inputsFeature = createFeature({
+  name: StateFeatures.Inputs,
   reducer: createReducer(
-    controlTypesInitialState,
-    on(ControlsActions.setInputTypes, (state, { inputTypes }) => ({
+    inputTypesInitialState,
+    on(InputTypesAPIActions.loadInputTypesSuccess, (state, { inputTypes }) => ({
       ...state,
       inputTypes,
     }))
@@ -57,16 +62,19 @@ export const componentsFeature = createFeature({
   name: StateFeatures.Components,
   reducer: createReducer(
     componentsInitialState,
-    on(ComponentsActions.setComponents, (state, { components }) => {
+    on(ComponentsAPIActions.loadComponentsSuccess, (state, { components }) => {
       return {
         ...state,
         components: adapter.setAll(components, state.components),
       };
     }),
-    on(ComponentsActions.setComponentTypes, (state, { componentTypes }) => ({
-      ...state,
-      componentTypes,
-    })),
+    on(
+      ComponentsAPIActions.loadComponentTypesSuccess,
+      (state, { componentTypes }) => ({
+        ...state,
+        componentTypes,
+      })
+    ),
     on(ComponentsActions.addComponent, (state, { component }) => {
       return {
         ...state,
@@ -112,3 +120,14 @@ export const componentsFeature = createFeature({
     ),
   }),
 });
+
+export const appPageViewModel = createSelector(
+  inputsFeature.selectInputTypes,
+  componentsFeature.selectAll,
+  componentsFeature.selectComponentTypes,
+  (inputTypes, all, componentTypes) => ({
+    inputTypes,
+    all,
+    componentTypes,
+  })
+);

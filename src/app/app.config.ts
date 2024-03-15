@@ -6,8 +6,8 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { routes } from './app.routes';
-import { ControlsEffects } from './store/app.effects';
-import { componentsFeature, controlsFeature } from './store/app.state';
+import { AppEffects } from './store/app.effects';
+import { componentsFeature, inputsFeature } from './store/app.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,8 +22,8 @@ export const appConfig: ApplicationConfig = {
       traceLimit: 75, // maximum stack trace frames to be stored (in case trace option was provided as true)
       connectInZone: true, // If set to true, the connection is established within the Angular zone
     }),
-    provideState(controlsFeature),
+    provideState(inputsFeature),
     provideState(componentsFeature),
-    provideEffects(ControlsEffects),
+    provideEffects(AppEffects),
   ],
 };

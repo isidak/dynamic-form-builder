@@ -4,7 +4,9 @@
       <h1>Dynamic form renderer</h1>
     </div>
   </div>
+  <ng-container *ngIf="vm$ | async as vm">
 
+ 
   <div class="row justify-content-around align-self-start">
     <div class="col-lg-4" cdkDrag>
       <app-component-creator
@@ -40,4 +42,5 @@
       </div>
     </div>
   </div>
+</ng-container>
 </div>

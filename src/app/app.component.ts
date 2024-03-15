@@ -10,15 +10,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, map, take, tap, withLatestFrom } from 'rxjs';
+import { Subject, map, tap, withLatestFrom } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
 import { DynamicComponentConfig } from './features/models/dynamic-component-config';
-import { FormConfigsService } from './services/form-configs.service';
+import { DynamicComponentsService } from './services/dynamic-components.service';
 import { CardComponent } from './shared/card/card.component';
-import { ComponentsActions, ControlsActions } from './store/app.actions';
-import { componentsFeature, controlsFeature } from './store/app.state';
+import {
+  ComponentsAPIActions,
+  ComponentsActions,
+  InputTypesAPIActions
+} from './store/app.actions';
+import {
+  appPageViewModel,
+  componentsFeature,
+  inputsFeature,
+} from './store/app.state';
 
 @Component({
   selector: 'app-root',
@@ -45,42 +53,26 @@ export class AppComponent implements OnInit {
   title = 'dynamic-form-builder';
 
   private store = inject(Store);
-  private formConfigService = inject(FormConfigsService);
+  private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
 
   selectedComponent$ = this.store.select(
     componentsFeature.selectSelectedComponent
   );
   displayGeneratedConfigs = false;
-  inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
+  vm$ = this.store.select(appPageViewModel);
+  inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
   components$ = this.store.select(componentsFeature.selectAll);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
 
   addComponent$ = new Subject<DynamicComponentConfig>();
 
   ngOnInit(): void {
-    this.formConfigService
-      .getInputTypes()
-      .pipe(take(1))
-      .subscribe((inputTypes) => {
-        this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
-      });
+    this.store.dispatch(InputTypesAPIActions.loadInputTypes());
 
-    this.formConfigService
-      .getComponents()
-      .pipe(take(1))
-      .subscribe((components) => {
-        this.store.dispatch(ComponentsActions.setComponents({ components }));
-      });
+    this.store.dispatch(ComponentsAPIActions.loadComponents());
 
-    this.formConfigService
-      .getComponentTypes()
-      .pipe(take(1))
-      .subscribe((componentTypes) => {
-        this.store.dispatch(
-          ComponentsActions.setComponentTypes({ componentTypes })
-        );
-      });
+    this.store.dispatch(ComponentsAPIActions.loadComponentTypes());
 
     this.addComponent$
       .pipe(
@@ -113,7 +105,7 @@ export class AppComponent implements OnInit {
   }
 
   submitForm(value: any) {
-    this.formConfigService.submitForm(value);
+    this.dynamicComponentsService.submitForm(value);
   }
 
   drop(event: CdkDragDrop<string[]>) {
