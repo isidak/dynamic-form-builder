@@ -12,7 +12,7 @@ import {
 import { Store } from '@ngrx/store';
 import { Observable, map, of, take } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
-import { controlsFeature } from '../../store/controls.state';
+import { controlsFeature } from '../../store/app.state';
 import { ComponentType } from '../models/component-type';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -32,7 +32,9 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
   styleUrl: './component-creator.component.css',
 })
 export class ComponentCreatorComponent {
-  @Input() set selectedComponent(value: DynamicComponentConfig | null | undefined) {
+  @Input() set selectedComponent(
+    value: DynamicComponentConfig | null | undefined
+  ) {
     if (!this.form) return;
     value === null ? (this.isEditMode = false) : (this.isEditMode = true);
     this.patchForm(value!);

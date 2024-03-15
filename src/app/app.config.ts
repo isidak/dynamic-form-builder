@@ -6,8 +6,8 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState, provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { routes } from './app.routes';
-import { ControlsEffects } from './store/controls.effects';
-import { componentsFeature, controlsFeature } from './store/controls.state';
+import { ControlsEffects } from './store/app.effects';
+import { componentsFeature, controlsFeature } from './store/app.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [

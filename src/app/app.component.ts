@@ -17,8 +17,8 @@ import { FormRendererComponent } from './features/form-renderer/form-renderer.co
 import { DynamicComponentConfig } from './features/models/dynamic-component-config';
 import { FormConfigsService } from './services/form-configs.service';
 import { CardComponent } from './shared/card/card.component';
-import { ComponentsActions, ControlsActions } from './store/controls.actions';
-import { componentsFeature, controlsFeature } from './store/controls.state';
+import { ComponentsActions, ControlsActions } from './store/app.actions';
+import { componentsFeature, controlsFeature } from './store/app.state';
 
 @Component({
   selector: 'app-root',
