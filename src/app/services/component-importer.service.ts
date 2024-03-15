@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import memo from 'memo-decorator';
-import { ComponentType } from '../features/models/component-type';
-import { ComponentTypeNames } from '../features/models/dynamic-component-config';
+import { ComponentsMap } from '../features/models/components-map';
+import {
+  ComponentTypeNames,
+  DynamicComponentConfig,
+} from '../features/models/dynamic-component-config';
 import {
   BehaviorSubject,
   Observable,
@@ -13,43 +16,48 @@ import {
   shareReplay,
   switchMap,
   tap,
+  withLatestFrom,
 } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ComponentImporterService {
-
-  getComponentTypes(): Observable<ComponentType[]> {
-    return of(this.componentTypes).pipe(
-      delay(1),
-      shareReplay(1)
-    );
+  getComponentTypes(): Observable<ComponentsMap[]> {
+    return of(this.componentsMap).pipe(delay(1), shareReplay(1));
   }
 
   @memo()
-  async importComponent(component: any) {
-    console.log('memoising', component.name);
+  async importComponent(component: () => Promise<any>) {
+    console.log('memoising', component);
 
     return await component();
   }
 
+  @memo()
+  importComponentByName(name: string) {
+    console.log('memoising', name);
+
+    // return of().pipe(withLatestFrom(this.getComponentTypes(),
+    //  mergeMap(
+    //   async (types) => from(await types.find((type) => type.name === name)?.component()))
+    //   ));
+  }
+
+  @memo()
   getImportedComponent(name: string) {
     console.log('importing', name);
     return this.getComponentTypes().pipe(
-      mergeMap((componentTypes) => {
-        const component = componentTypes.find(
-          (x) => x.name === name
-        )?.component;
-
-        if (!component) throw new Error('Component not found');
-
-        return from(this.importComponent(component));
+      mergeMap((types) => {
+        if (!types) return of(null);
+        const componentType = types.find((type) => type.name === name);
+        const component = componentType!.component();
+        return from(component);
       })
     );
   }
 
-  private componentTypes: ComponentType[] = [
+  private componentsMap: ComponentsMap[] = [
     {
       name: ComponentTypeNames.Input,
       component: async () =>

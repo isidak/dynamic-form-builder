@@ -1,3 +1,5 @@
+import { ComponentImporterService } from './../../services/component-importer.service';
+import { DynamicComponentConfig } from './../models/dynamic-component-config';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
   AsyncPipe,
@@ -18,9 +20,9 @@ import {
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, ReactiveFormsModule} from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import memo from 'memo-decorator';
-import { Observable, distinctUntilChanged, map } from 'rxjs';
+import { Observable, combineLatest, distinctUntilChanged, from, map, mergeMap, tap } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
 
@@ -42,6 +44,13 @@ import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
 })
 export class FormRendererComponent implements OnInit {
   @Input() components$: Observable<any[]>;
+  componentsCopy: any[];
+  @Input() set components(value: any) {
+    if (value !== null) {
+      this.componentsCopy = JSON.parse(JSON.stringify(value));
+      console.log('components', this.componentsCopy);
+    }
+  }
 
   @Output() submittedForm = new EventEmitter();
   @Output() selected = new EventEmitter();
@@ -54,6 +63,7 @@ export class FormRendererComponent implements OnInit {
   form = new FormGroup({});
 
   private cdr = inject(ChangeDetectorRef);
+  private componentImporterService = inject(ComponentImporterService);
 
   ngOnInit(): void {
     this.importedComponents$ = this.components$.pipe(
@@ -64,7 +74,8 @@ export class FormRendererComponent implements OnInit {
       distinctUntilChanged(
         (prev, curr) => prev.length === 0 && curr.length === 0
       ),
-      map((components) => this.createComps(components))
+      tap((components) => console.log('components', components)),
+      mergeMap((components) => combineLatest(components.map(component => this.importComponent(component)))),
     );
 
     this.form.statusChanges
@@ -87,22 +98,30 @@ export class FormRendererComponent implements OnInit {
     this.submittedForm.emit(this.form.value);
   }
 
-  createComps(components: any[]) {
-    let newComponents: any[] = [];
-    components.forEach(async (component) => {
-      newComponents.push(await this.importComponent(component));
-    });
+  // createComps(components: any[]) {
+  //   let newComponents: any[] = [];
+  //   components.forEach(async (component) => {
+  //     newComponents.push(await this.importComponent(component));
+  //   });
 
-    return newComponents;
-  }
+  //   return newComponents;
+  // }
 
-  async importComponent(configs: any) {
-    const newCmp = {
-      ...configs,
-      importedCmp: await configs['component'](),
-    };
+  importComponent(configs: any) {
+    return this.componentImporterService.getImportedComponent(configs.name).pipe(
+      map((component) => {
+        return {
+          ...configs,
+          component,
+        };
+      }
+    ));
+    // const newCmp = {
+    //   ...configs,
+    //   component: this.componentImporterService.getImportedComponent(configs.name),
+    // };
 
-    return newCmp;
+    // return newCmp;
   }
 
   trackById(index: number, item: any) {

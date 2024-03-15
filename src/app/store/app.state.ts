@@ -4,8 +4,14 @@ import {
   EntityState,
   createEntityAdapter,
 } from '@ngrx/entity';
-import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
-import { ComponentType } from '../features/models/component-type';
+import {
+  createFeature,
+  createReducer,
+  createSelector,
+  on,
+  select,
+} from '@ngrx/store';
+import { ComponentsMap } from '../features/models/components-map';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
 import {
   ComponentsAPIActions,
@@ -13,6 +19,7 @@ import {
   InputTypesAPIActions,
   InputTypesActions,
 } from './app.actions';
+import { filter, pipe } from 'rxjs';
 
 interface InputTypesState {
   inputTypes: string[];
@@ -21,7 +28,7 @@ interface InputTypesState {
 interface ComponentsState {
   components: EntityState<DynamicComponentConfig>;
   loading: boolean;
-  componentTypes: ComponentType[] | null;
+  componentTypes: ComponentsMap[] | null;
   selectedComponentId: string | null;
 }
 
@@ -130,4 +137,9 @@ export const appPageViewModel = createSelector(
     all,
     componentTypes,
   })
+);
+
+export const selectFilteredValues = pipe(
+  select(componentsFeature.selectAll),
+  filter((val) => val.length > 0)
 );

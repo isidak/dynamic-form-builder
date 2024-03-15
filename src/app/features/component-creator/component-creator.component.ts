@@ -13,7 +13,7 @@ import { Store } from '@ngrx/store';
 import { Observable, map, of, take } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
 import { inputsFeature } from '../../store/app.state';
-import { ComponentType } from '../models/component-type';
+import { ComponentsMap } from '../models/components-map';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
 @Component({
@@ -42,7 +42,7 @@ export class ComponentCreatorComponent {
   @Output() formValue = new EventEmitter();
   @Output() editCanceled = new EventEmitter();
   @Input() inputTypes: string[] | null = [];
-  @Input() componentTypes: ComponentType[] | null = [];
+  @Input() componentTypes: ComponentsMap[] | null = [];
 
   private fb = inject(FormBuilder);
 

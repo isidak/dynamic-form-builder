@@ -1,6 +1,6 @@
 
 export interface DynamicComponentConfig {
-    component: () => Promise<any>;
+    component: any;
     importedCmp?: any;
     id: string;
     name: string;

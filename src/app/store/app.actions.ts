@@ -1,5 +1,5 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
-import { ComponentType } from '../features/models/component-type';
+import { ComponentsMap } from '../features/models/components-map';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
 
 export const InputTypesActions = createActionGroup({
@@ -22,7 +22,7 @@ export const ComponentsActions = createActionGroup({
   source: 'Components',
   events: {
     'Set Components': props<{ components: DynamicComponentConfig[] }>(),
-    'Set Component Types': props<{ componentTypes: ComponentType[] }>(),
+    'Set Component Types': props<{ componentTypes: ComponentsMap[] }>(),
     'Add Component': props<{ component: DynamicComponentConfig }>(),
     'Remove Component': props<{ id: string }>(),
     'Edit Component': props<{
@@ -38,7 +38,7 @@ export const ComponentsAPIActions = createActionGroup({
   events: {
     'Load Component Types': emptyProps(),
     'Load Component Types Success': props<{
-      componentTypes: ComponentType[];
+      componentTypes: ComponentsMap[];
     }>(),
     'Load Component Types Failure': props<{ error: string }>(),
     'Load Components': emptyProps(),
