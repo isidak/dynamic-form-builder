@@ -3,20 +3,27 @@ import {
   CdkDragDrop,
   CdkDragHandle,
   DragDropModule,
+  DragDropModule,
 } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { take } from 'rxjs';
-import { ControlConfig } from './features/dynamic-control/control-config';
-import { EditorComponent } from './features/editor/editor.component';
+import { Subject, map, tap } from 'rxjs';
+import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
+import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
-import { FormConfigsService } from './services/form-configs.service';
+import { DynamicComponentConfig } from './features/models/dynamic-component-config';
+import { DynamicComponentsService } from './services/dynamic-components.service';
 import { CardComponent } from './shared/card/card.component';
-import { ControlsActions } from './store/controls.actions';
-import { controlsFeature } from './store/controls.state';
+import {
+  ComponentsAPIActions,
+  ComponentsActions,
+  InputTypesAPIActions,
+} from './store/app.actions';
+import { componentsFeature, inputsFeature } from './store/app.state';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +32,7 @@ import { controlsFeature } from './store/controls.state';
   styleUrl: './app.component.css',
   imports: [
     RouterOutlet,
-    EditorComponent,
+    ComponentCreatorComponent,
     FormRendererComponent,
     CardComponent,
     JsonPipe,
@@ -36,85 +43,100 @@ import { controlsFeature } from './store/controls.state';
     NgStyle,
     CdkDragHandle,
     DragDropModule,
+    InputComponent,
   ],
 })
 export class AppComponent implements OnInit {
   title = 'dynamic-form-builder';
 
   private store = inject(Store);
-  private formConfigService = inject(FormConfigsService);
+  private dynamicComponentsService = inject(DynamicComponentsService);
+  private destroyRef = inject(DestroyRef);
 
-  selectedControl$ = this.store.select(controlsFeature.selectSelectedControl);
   displayGeneratedConfigs = false;
+  // vm$ = this.store.select(appPageViewModel);
+  inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
+  components$ = this.store.select(componentsFeature.selectAll);
+  componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
+  selectedComponent$ = this.store.select(
+    componentsFeature.selectSelectedComponent
+  );
 
-  formConfigs$ = this.store.select(controlsFeature.selectControls);
-  inputTypes$ = this.store.select(controlsFeature.selectInputTypes);
+  addComponent$ = new Subject<DynamicComponentConfig>();
 
   ngOnInit(): void {
-    this.formConfigService
-      .getConfigs()
-      .pipe(take(1))
-      .subscribe(([controls, inputTypes]) => {
-        this.store.dispatch(ControlsActions.setControls({ controls }));
-        this.store.dispatch(ControlsActions.setInputTypes({ inputTypes }));
-      });
+    this.store.dispatch(InputTypesAPIActions.loadInputTypes());
+    this.store.dispatch(ComponentsAPIActions.loadComponents());
+    this.store.dispatch(ComponentsAPIActions.loadComponentTypes());
+
+    this.addComponent$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((component) => ({
+          ...component,
+          id: this.generateId().toString(),
+        })),
+        tap((component: DynamicComponentConfig) =>
+          this.store.dispatch(ComponentsActions.addComponent({ component }))
+        )
+      )
+      .subscribe();
   }
 
   onEditorSubmit(value: any) {
     value.isEdit
-      ? this.saveControl(value.formValue)
-      : this.addControl(value.formValue);
+      ? this.saveComponent(value.form)
+      : this.addComponent(value.form);
   }
 
-  addControl(control: ControlConfig) {
-    control.id = this.generateId().toString();
-    this.store.dispatch(ControlsActions.addControl({ control }));
+  addComponent(component: DynamicComponentConfig) {
+    this.addComponent$.next(component);
   }
 
   submitForm(value: any) {
-    this.formConfigService.submitForm(value);
+    this.dynamicComponentsService.submitForm(value);
   }
 
-  drop(event: CdkDragDrop<string[]>, formConfigs: ControlConfig[]) {
+  drop(event: CdkDragDrop<string[]>) {
     // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
     // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
 
-  editControl(event: ControlConfig) {
-    this.store.dispatch(
-      ControlsActions.selectControl({
-        id: event.id,
-      })
-    );
+  selectComponent(id: string) {
+    this.store.dispatch(ComponentsActions.selectComponent({ id }));
   }
 
-  removeControl(event: ControlConfig) {
-    this.store.dispatch(ControlsActions.removeControl({ id: event.id }));
+  removeComponent(id: string) {
+    this.store.dispatch(ComponentsActions.removeComponent({ id }));
   }
 
-  saveControl(control: ControlConfig) {
+  saveComponent(component: DynamicComponentConfig) {
     this.store.dispatch(
-      ControlsActions.editControl({
-        editedControl: control,
+      ComponentsActions.editComponent({
+        editedComponent: component,
       })
     );
   }
 
   cancelEdit() {
-    this.store.dispatch(ControlsActions.clearSelectedControl());
+    this.store.dispatch(ComponentsActions.clearSelectedComponent());
   }
 
-  private generateId() {
+  generateId() {
     let newId;
-    const controls = this.store.selectSignal(controlsFeature.selectControls)();
+    const components = this.store.selectSignal(componentsFeature.selectAll)();
+    // selectSignal(
+    //   componentsFeature.selectComponents
+    // )();
+    console.log('id', components);
 
-    if (controls.length === 0) return (newId = 1);
-    if (controls.length > 1)
+    if (components === null || components.length === 0) return (newId = 1);
+    if (components.length > 1)
       return (newId =
-        Math.max(...controls.map((control) => Number(control.id))) + 1);
+        Math.max(...components.map((component) => Number(component.id))) + 1);
     return (newId =
       (Number(
-        controls.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
+        components.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
       ) ?? 0) + 1);
   }
 }
