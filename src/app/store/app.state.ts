@@ -11,15 +11,14 @@ import {
   on,
   select,
 } from '@ngrx/store';
+import { filter, pipe } from 'rxjs';
 import { ComponentsMap } from '../features/models/components-map';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
 import {
   ComponentsAPIActions,
   ComponentsActions,
-  InputTypesAPIActions,
-  InputTypesActions,
+  InputTypesAPIActions
 } from './app.actions';
-import { filter, pipe } from 'rxjs';
 
 interface InputTypesState {
   inputTypes: string[];

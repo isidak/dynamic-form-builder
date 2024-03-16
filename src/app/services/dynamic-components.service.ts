@@ -1,79 +1,17 @@
 import { Injectable, inject } from '@angular/core';
+import cloneDeep from 'clone-deep';
+import clone from 'just-clone';
 import {
   Observable,
-  combineLatest,
-  combineLatestAll,
   delay,
-  from,
-  map,
-  merge,
-  mergeMap,
-  of,
-  tap,
+  of
 } from 'rxjs';
-import { ComponentsMap } from '../features/models/components-map';
 import {
   ComponentTypeNames,
-  DynamicComponentConfig,
-  InputTypes,
+  InputTypes
 } from '../features/models/dynamic-component-config';
 import { ComponentImporterService } from './component-importer.service';
-import clone from 'just-clone';
-import cloneDeep from 'clone-deep';
 
-const componentsMap: ComponentsMap[] = [
-  {
-    name: ComponentTypeNames.Input,
-    component: async () =>
-      (await import('../features/components/input/input.component'))
-        .InputComponent,
-  },
-  {
-    name: ComponentTypeNames.Select,
-    component: async () =>
-      (await import('../features/components/select/select.component'))
-        .SelectComponent,
-  },
-  // {
-  //   name: 'radio',
-  //   component: async () =>
-  //     (await import('../features/components/radio/radio.component')).RadioComponent,
-  // },
-  {
-    name: ComponentTypeNames.Checkbox,
-    component: async () =>
-      (await import('../features/components/checkbox/checkbox.component'))
-        .CheckboxComponent,
-  },
-  {
-    name: ComponentTypeNames.Textarea,
-    component: async () =>
-      (await import('../features/components/textarea/textarea.component'))
-        .TextareaComponent,
-  },
-  // {
-  //   name: 'date',
-  //   component: async () =>
-  //     (await import('../features/components/date/date.component')).DateComponent,
-  // },
-  // {
-  //   name: 'time',
-  //   component: async () =>
-  //     (await import('../features/components/time/time.component')).TimeComponent,
-  // },
-  {
-    name: ComponentTypeNames.File,
-    component: async () =>
-      (await import('../features/components/file-input/file-input.component'))
-        .FileInputComponent,
-  },
-  // {
-  //   name: 'button',
-  //   component: async () =>
-  //     (await import('../features/components/button/button.component'))
-  //       .ButtonComponent,
-  // },
-];
 
 const components = [
   {
@@ -194,18 +132,7 @@ export class DynamicComponentsService {
 
   getComponents(): Observable<any[]> {
     return of(cloneDeep(components)).pipe(
-      delay(2000)
-      // map((components) => {
-      //   return components.map(async (cmp: any) => {
-      //     return {
-      //       ...cmp,
-      //       component: await cmp.component(),
-      //     };
-      //   });
-      // }),
-      // mergeMap((components) => combineLatest(components)),
-
-      // map((components) => clone(components))
+      delay(20)
     );
   }
 

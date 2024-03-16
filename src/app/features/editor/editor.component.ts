@@ -1,29 +1,11 @@
-// import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-// import {
-//   ChangeDetectionStrategy,
-//   Component,
-//   DestroyRef,
-//   EventEmitter,
-//   Input,
-//   OnInit,
-//   Output,
-//   inject,
-// } from '@angular/core';
-// import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-// import {
-//   AbstractControl,
-//   AsyncValidatorFn,
-//   FormBuilder,
-//   FormGroup,
-//   ReactiveFormsModule,
-//   ValidationErrors,
-//   Validators,
-// } from '@angular/forms';
-// import { Store } from '@ngrx/store';
-// import { Observable, map, of, take } from 'rxjs';
-// import { CardComponent } from '../../shared/card/card.component';
-// import { controlsFeature } from '../../store/controls.state';
-// import { ControlConfig } from '../dynamic-control/control-config';
+// import { NgIf, NgFor, NgStyle, NgClass, JsonPipe } from "@angular/common";
+// import { Component, ChangeDetectionStrategy, OnInit, Input, Output, EventEmitter, inject, DestroyRef } from "@angular/core";
+// import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+// import { ReactiveFormsModule, ControlConfig, FormBuilder, FormGroup, Validators, AsyncValidatorFn, AbstractControl, ValidationErrors } from "@angular/forms";
+// import { Store } from "@ngrx/store";
+// import { Observable, of, take, map } from "rxjs";
+// import { CardComponent } from "../../shared/card/card.component";
+
 
 // @Component({
 //   selector: 'app-editor',

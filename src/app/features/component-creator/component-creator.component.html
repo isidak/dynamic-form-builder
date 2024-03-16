@@ -42,7 +42,14 @@
           id="label"
           class="form-control"
           formControlName="label"
+          [ngClass]="{ 'is-invalid': label?.invalid && label?.touched }"
         />
+        <div class="invalid-feedback" *ngIf="label?.errors?.['required']">
+          Please provide a label.
+        </div>
+        <div class="invalid-feedback" *ngIf="label?.errors?.['minlength']">
+          Lable should be at least {{minLength}} charachters long.
+        </div>
       </div>
 
       <div class="form-group">
@@ -52,7 +59,19 @@
           id="placeholder"
           class="form-control"
           formControlName="placeholder"
+          [ngClass]="{
+            'is-invalid': placeholder?.invalid && placeholder?.touched
+          }"
         />
+        <div class="invalid-feedback" *ngIf="placeholder?.errors?.['required']">
+          Please provide a placeholder.
+        </div>
+        <div
+          class="invalid-feedback"
+          *ngIf="placeholder?.errors?.['minlength']"
+        >
+          Placeholder should be at least {{minLength}} charachters long.
+        </div>
       </div>
       <div class="form-group">
         <label for="controlName">Control Name</label>
@@ -61,7 +80,17 @@
           id="controlName"
           class="form-control"
           formControlName="controlName"
+          [ngClass]="{ 'is-invalid': controlName?.invalid && controlName?.touched }"
         />
+        <div class="invalid-feedback" *ngIf="controlName?.errors?.['required']">
+          Please provide a name.
+        </div>
+        <div class="invalid-feedback" *ngIf="controlName?.errors?.['minlength']">
+          Name should be at least {{minLength}} charachters long.
+        </div>
+        <div class="invalid-feedback" *ngIf="controlName?.errors?.['nameExists']">
+          FormControl name already exists. Please provide a unique name.
+        </div>
       </div>
 
       <div class="form-group">

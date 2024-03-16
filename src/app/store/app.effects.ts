@@ -1,14 +1,12 @@
-import { ComponentImporterService } from './../services/component-importer.service';
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { ComponentsAPIActions, InputTypesAPIActions } from './app.actions';
 import { catchError, exhaustMap, map, of, tap } from 'rxjs';
 import { DynamicComponentsService } from '../services/dynamic-components.service';
+import { ComponentImporterService } from './../services/component-importer.service';
+import { ComponentsAPIActions, InputTypesAPIActions } from './app.actions';
 
 @Injectable()
 export class AppEffects {
-  private store = inject(Store);
   private actions$ = inject(Actions);
   private componentImporterService = inject(ComponentImporterService);
   private dynamicComponentsService = inject(DynamicComponentsService);

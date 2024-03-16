@@ -1,4 +1,3 @@
-import { ComponentImporterService } from './services/component-importer.service';
 import {
   CdkDrag,
   CdkDragDrop,
@@ -11,7 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, filter, map, tap, withLatestFrom } from 'rxjs';
+import { Subject, map, tap } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
@@ -21,15 +20,9 @@ import { CardComponent } from './shared/card/card.component';
 import {
   ComponentsAPIActions,
   ComponentsActions,
-  InputTypesAPIActions
+  InputTypesAPIActions,
 } from './store/app.actions';
-import {
-  appPageViewModel,
-  componentsFeature,
-  inputsFeature,
-  selectFilteredValues,
-} from './store/app.state';
-import clone from 'just-clone';
+import { componentsFeature, inputsFeature } from './store/app.state';
 
 @Component({
   selector: 'app-root',
@@ -58,16 +51,15 @@ export class AppComponent implements OnInit {
   private store = inject(Store);
   private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
-  private ComponentImporterService = inject(ComponentImporterService);
 
-  selectedComponent$ = this.store.select(
-    componentsFeature.selectSelectedComponent
-  );
   displayGeneratedConfigs = false;
   // vm$ = this.store.select(appPageViewModel);
   inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
-  components$ = this.store.pipe(selectFilteredValues);
+  components$ = this.store.select(componentsFeature.selectAll);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
+  selectedComponent$ = this.store.select(
+    componentsFeature.selectSelectedComponent
+  );
 
   addComponent$ = new Subject<DynamicComponentConfig>();
 
@@ -75,35 +67,20 @@ export class AppComponent implements OnInit {
     this.store.dispatch(InputTypesAPIActions.loadInputTypes());
     this.store.dispatch(ComponentsAPIActions.loadComponents());
     this.store.dispatch(ComponentsAPIActions.loadComponentTypes());
-    // this.components$ = this.importComponents()
 
     this.addComponent$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        // withLatestFrom(this.componentTypes$),
-        // map(([component, componentTypes]) => {
-        //   if (!componentTypes) return component;
-        //   const componentType = componentTypes.find(
-        //     (type) => type.name === component.name
-        //   );
-        //   component.id = this.generateId().toString();
-        //   component['component'] = componentType!.component;
-        //   return component;
-        // }),
-        map(component => ( {...component, id: this.generateId().toString()})),
-        tap((cmp) => console.log(cmp)),
+        map((component) => ({
+          ...component,
+          id: this.generateId().toString(),
+        })),
         tap((component: DynamicComponentConfig) =>
           this.store.dispatch(ComponentsActions.addComponent({ component }))
         )
       )
       .subscribe();
   }
-
-  importComponent(component: DynamicComponentConfig) {
-    // this.ComponentImporterService.importComponentByName(component.name);
-
-  }
-
 
   onEditorSubmit(value: any) {
     value.isEdit

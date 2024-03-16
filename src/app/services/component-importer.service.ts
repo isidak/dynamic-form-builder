@@ -1,23 +1,8 @@
 import { Injectable } from '@angular/core';
 import memo from 'memo-decorator';
+import { Observable, delay, from, mergeMap, of, shareReplay } from 'rxjs';
 import { ComponentsMap } from '../features/models/components-map';
-import {
-  ComponentTypeNames,
-  DynamicComponentConfig,
-} from '../features/models/dynamic-component-config';
-import {
-  BehaviorSubject,
-  Observable,
-  delay,
-  from,
-  map,
-  mergeMap,
-  of,
-  shareReplay,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from 'rxjs';
+import { ComponentTypeNames } from '../features/models/dynamic-component-config';
 
 @Injectable({
   providedIn: 'root',
@@ -28,30 +13,17 @@ export class ComponentImporterService {
   }
 
   @memo()
-  async importComponent(component: () => Promise<any>) {
-    console.log('memoising', component);
-
-    return await component();
-  }
-
-  @memo()
   importComponentByName(name: string) {
-    console.log('memoising', name);
-
-    // return of().pipe(withLatestFrom(this.getComponentTypes(),
-    //  mergeMap(
-    //   async (types) => from(await types.find((type) => type.name === name)?.component()))
-    //   ));
+    return this.componentsMap.find((type) => type.name === name)?.component;
   }
 
-  @memo()
   getImportedComponent(name: string) {
-    console.log('importing', name);
     return this.getComponentTypes().pipe(
       mergeMap((types) => {
         if (!types) return of(null);
-        const componentType = types.find((type) => type.name === name);
-        const component = componentType!.component();
+        const componentType = this.importComponentByName(name);
+        if (!componentType) return of(null);
+        const component = componentType();
         return from(component);
       })
     );

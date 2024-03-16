@@ -12,6 +12,23 @@ import {
   standalone: true,
 })
 export abstract class BaseInput implements OnInit, OnDestroy{
+  // [key: string]: any; // Add index signature
+
+  // @Input() set inputs(value: any) {
+  //   Object.keys(value).forEach((key) => {
+  //     if (key === 'options') {
+  //       this[key] = value[key].map((option: any) => {
+  //         return {
+  //           value: option.value,
+  //           label: option.label,
+  //         };
+  //       });
+  //       return;
+  //     }
+      
+  //     this[key] = value[key];
+  //   });
+  // }
   @Input({ required: true }) controlName: string | number;
   @Input() type = 'text';
   @Input() label: string;

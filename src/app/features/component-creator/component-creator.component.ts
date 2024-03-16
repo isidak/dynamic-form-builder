@@ -9,10 +9,8 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { Observable, map, of, take } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
-import { inputsFeature } from '../../store/app.state';
 import { ComponentsMap } from '../models/components-map';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -43,6 +41,7 @@ export class ComponentCreatorComponent {
   @Output() editCanceled = new EventEmitter();
   @Input() inputTypes: string[] | null = [];
   @Input() componentTypes: ComponentsMap[] | null = [];
+  @Input() minLength = 3;
 
   private fb = inject(FormBuilder);
 
@@ -52,16 +51,16 @@ export class ComponentCreatorComponent {
 
   isSubmit = false;
   get type() {
-    return this.form.get('type');
+    return this.form.get('inputs')?.get('type');
   }
-  get name() {
-    return this.form.get('name');
+  get controlName() {
+    return this.form.get('inputs')?.get('controlName');
   }
   get label() {
-    return this.form.get('label');
+    return this.form.get('inputs')?.get('label');
   }
   get placeholder() {
-    return this.form.get('placeholder');
+    return this.form.get('inputs')?.get('placeholder');
   }
 
   ngOnInit(): void {
@@ -74,26 +73,24 @@ export class ComponentCreatorComponent {
 
   createForm(): FormGroup<any> {
     return this.fb.group({
-      component: [''],
-      importedCmp: [''],
       id: [''],
-      name: [
-        {
-          value: '',
-          disabled: this.isEditMode,
-        },
-        [Validators.required, Validators.minLength(3)],
-        [this.isValidName()],
-      ],
+      name: [''],
       inputs: this.fb.group({
-        controlName: [''],
+        controlName: [
+          {
+            value: '',
+            disabled: this.isEditMode,
+          },
+          [Validators.required, Validators.minLength(this.minLength)],
+          // [this.isValidName()],
+        ],
         required: [false],
         minLength: [0],
         readonly: [false],
         autocomplete: [''],
         type: [''],
-        label: ['', [Validators.required, Validators.minLength(3)]],
-        placeholder: ['', [Validators.required, Validators.minLength(3)]],
+        label: ['', [Validators.required, Validators.minLength(this.minLength)]],
+        placeholder: ['', [Validators.minLength(this.minLength)]],
       }),
     });
   }
