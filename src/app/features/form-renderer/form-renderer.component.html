@@ -1,7 +1,7 @@
-<form [formGroup]="form" class="container">
+<form [formGroup]="form" class="container" cdkDropList (cdkDropListDropped)="drop($event)" #delay>
   <ng-container *ngIf="importedComponents$ | async as components">
-    <ng-container
-      *ngFor="let component of components; let i = index; trackBy: trackById"
+    <ng-container 
+      *ngFor="let component of componentsCopy; let i = index; trackBy: trackById"
     >
       <app-edit-wrapper
         (remove)="removeComponent(component.id)"
@@ -17,7 +17,6 @@
     <button
       type="submit"
       class="btn btn-primary mt-2"
-      [disabled]="!form.valid"
       (click)="submitForm()"
     >
       Submit

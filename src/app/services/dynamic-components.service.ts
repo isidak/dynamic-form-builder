@@ -17,6 +17,8 @@ const components = [
   {
     id: '1',
     name: ComponentTypeNames.Input,
+    index: '0',
+    columnId: '0',
     inputs: {
       type: InputTypes.Text,
       controlName: 'label',
@@ -31,6 +33,8 @@ const components = [
   {
     id: '2',
     name: ComponentTypeNames.Input,
+    index: '1',
+    columnId: '1',
     inputs: {
       type: InputTypes.Text,
       controlName: 'controlName',
@@ -45,6 +49,8 @@ const components = [
   {
     id: '3',
     name: ComponentTypeNames.Input,
+    index: '2',
+    columnId: '2',
     inputs: {
       type: InputTypes.Text,
       controlName: 'placeholder',
@@ -59,6 +65,8 @@ const components = [
   {
     id: '4',
     name: ComponentTypeNames.Input,
+    index: '3',
+    columnId: '3',
     inputs: {
       type: InputTypes.Number,
       controlName: 'minLength',
@@ -73,6 +81,8 @@ const components = [
   {
     id: '5',
     name: ComponentTypeNames.Select,
+    index: '4',
+    columnId: '4',
     inputs: {
       type: InputTypes.Text,
       controlName: 'name',
@@ -91,6 +101,8 @@ const components = [
   {
     id: '6',
     name: ComponentTypeNames.Select,
+    index: '5',
+    columnId: '5',
     inputs: {
       type: InputTypes.Text,
       controlName: 'type',
@@ -112,6 +124,8 @@ const components = [
   {
     id: '7',
     name: ComponentTypeNames.Checkbox,
+    index: '6',
+    columnId: '6',
     inputs: {
       type: InputTypes.Checkbox,
       controlName: 'required',

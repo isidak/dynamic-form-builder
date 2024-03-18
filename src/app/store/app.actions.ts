@@ -30,6 +30,7 @@ export const ComponentsActions = createActionGroup({
     }>(),
     'Select Component': props<{ id: string }>(),
     'Clear Selected Component': emptyProps(),
+    'Sort Components': props<{ prevIndex: number, currIndex: number}>(),
   },
 });
 

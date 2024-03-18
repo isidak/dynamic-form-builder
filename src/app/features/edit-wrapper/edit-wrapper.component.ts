@@ -1,10 +1,10 @@
-import { CdkDrag } from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-edit-wrapper',
   standalone: true,
-  imports: [CdkDrag],
+  imports: [CdkDrag, CdkDragHandle],
   templateUrl: './edit-wrapper.component.html',
   styleUrl: './edit-wrapper.component.css'
 })

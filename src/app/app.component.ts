@@ -22,7 +22,11 @@ import {
   ComponentsActions,
   InputTypesAPIActions,
 } from './store/app.actions';
-import { componentsFeature, inputsFeature } from './store/app.state';
+import {
+  componentsFeature,
+  inputsFeature,
+  selectSortedComponents,
+} from './store/app.state';
 
 @Component({
   selector: 'app-root',
@@ -39,6 +43,7 @@ import { componentsFeature, inputsFeature } from './store/app.state';
     AsyncPipe,
     ResizableModule,
     CdkDrag,
+    CdkDragHandle,
     NgStyle,
     CdkDragHandle,
     DragDropModule,
@@ -55,7 +60,7 @@ export class AppComponent implements OnInit {
   displayGeneratedConfigs = false;
   // vm$ = this.store.select(appPageViewModel);
   inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
-  components$ = this.store.select(componentsFeature.selectAll);
+  components$ = this.store.select(selectSortedComponents);
   componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
   selectedComponent$ = this.store.select(
     componentsFeature.selectSelectedComponent
@@ -100,6 +105,10 @@ export class AppComponent implements OnInit {
     // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
     // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
+  sortComponents(positions: any) {
+    // console.log('positions', positions);
+    // this.store.dispatch(ComponentsActions.sortComponents(positions));
+  }
 
   selectComponent(id: string) {
     this.store.dispatch(ComponentsActions.selectComponent({ id }));
@@ -107,6 +116,12 @@ export class AppComponent implements OnInit {
 
   removeComponent(id: string) {
     this.store.dispatch(ComponentsActions.removeComponent({ id }));
+    if (
+      this.store.selectSignal(componentsFeature.selectSelectedComponentId)() ===
+      id
+    ) {
+      this.store.dispatch(ComponentsActions.clearSelectedComponent());
+    }
   }
 
   saveComponent(component: DynamicComponentConfig) {
@@ -115,6 +130,7 @@ export class AppComponent implements OnInit {
         editedComponent: component,
       })
     );
+    this.store.dispatch(ComponentsActions.clearSelectedComponent());
   }
 
   cancelEdit() {

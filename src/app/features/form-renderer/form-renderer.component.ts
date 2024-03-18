@@ -1,4 +1,8 @@
-import { DragDropModule } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import {
   AsyncPipe,
   JsonPipe,
@@ -13,17 +17,18 @@ import {
   Input,
   OnInit,
   Output,
-  inject
+  inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   Observable,
   combineLatest,
   distinctUntilChanged,
   map,
   mergeMap,
-  of
+  of,
+  tap,
 } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { DynamicComponentRenderedComponent } from '../dynamic-component-rendered/dynamic-component-rendered.component';
@@ -50,12 +55,12 @@ import { DynamicComponentConfig } from './../models/dynamic-component-config';
 })
 export class FormRendererComponent implements OnInit {
   @Input() components$: Observable<any[]>;
-  // componentsCopy: any[];
-
+  componentsCopy: any[];
 
   @Output() submittedForm = new EventEmitter();
   @Output() selected = new EventEmitter();
   @Output() remove = new EventEmitter();
+  @Output() itemsDragged = new EventEmitter();
 
   importedComponents$: Observable<DynamicComponentConfig[]>;
 
@@ -72,18 +77,16 @@ export class FormRendererComponent implements OnInit {
         (prev, curr) => prev.length === 0 && curr.length === 0
       ),
       mergeMap((components) => {
-        if(components.length === 0) {
+        if (components.length === 0) {
           return of([]);
         } else {
-        return combineLatest(
-          components.map((component) => this.importComponent(component))
-        )}
-      }
-      ),
-      // tap((components) => this.componentsCopy = [...components]),
-      
+          return combineLatest(
+            components.map((component) => this.importComponent(component))
+          );
+        }
+      }),
+      tap((components) => (this.componentsCopy = [...components]))
     );
-
   }
 
   removeComponent(id: string) {
@@ -95,8 +98,8 @@ export class FormRendererComponent implements OnInit {
   }
 
   submitForm() {
-    console.log(this.form.value);
-    this.submittedForm.emit(this.form.value);
+    if (this.form.valid) this.submittedForm.emit(this.form.value);
+    (Object.values(this.form.controls) as FormControl[]).forEach((control) => control.markAsTouched());
   }
 
   importComponent(configs: any) {
@@ -114,5 +117,17 @@ export class FormRendererComponent implements OnInit {
 
   trackById(index: number, item: any) {
     return item.id;
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+    // this.itemsDragged.emit({
+    //   prevIndex: event.previousIndex,
+    //   currIndex: event.currentIndex,
+    // });
+    moveItemInArray(
+      this.componentsCopy,
+      event.previousIndex,
+      event.currentIndex
+    );
   }
 }
