@@ -35,7 +35,7 @@ const inputTypesInitialState: InputTypesState = {
   inputTypes: [],
 };
 
-const sortComparer: Comparer<DynamicComponentConfig> = (c1, c2) =>
+const sortComparer: Comparer<DynamicComponentConfig> = (c1: any, c2: any) =>
   c1.id.localeCompare(c2.id);
 
 const adapter: EntityAdapter<DynamicComponentConfig> =
