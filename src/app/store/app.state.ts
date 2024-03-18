@@ -1,23 +1,20 @@
 import {
-  Comparer,
   EntityAdapter,
   EntityState,
-  createEntityAdapter,
+  createEntityAdapter
 } from '@ngrx/entity';
 import {
   createFeature,
   createReducer,
   createSelector,
-  on,
-  select,
+  on
 } from '@ngrx/store';
-import { filter, pipe } from 'rxjs';
 import { ComponentsMap } from '../features/models/components-map';
 import { DynamicComponentConfig } from '../features/models/dynamic-component-config';
 import {
   ComponentsAPIActions,
   ComponentsActions,
-  InputTypesAPIActions
+  InputTypesAPIActions,
 } from './app.actions';
 
 interface InputTypesState {
@@ -29,23 +26,25 @@ interface ComponentsState {
   loading: boolean;
   componentTypes: ComponentsMap[] | null;
   selectedComponentId: string | null;
+  sortKeys: number[];
 }
 
 const inputTypesInitialState: InputTypesState = {
   inputTypes: [],
 };
 
-const sortComparer: Comparer<DynamicComponentConfig> = (c1, c2) =>
-  c1.id.localeCompare(c2.id);
+// const sortComparer: Comparer<DynamicComponentConfig> = (c1, c2) =>
+//   c1.index?.localeCompare(c2.index || '') || 999;
 
 const adapter: EntityAdapter<DynamicComponentConfig> =
-  createEntityAdapter<DynamicComponentConfig>({ sortComparer });
+  createEntityAdapter<DynamicComponentConfig>();
 
 const componentsInitialState: ComponentsState = {
-  components: adapter.getInitialState(),
+  components: adapter.getInitialState({}),
   loading: false,
   componentTypes: [],
   selectedComponentId: null,
+  sortKeys: [],
 };
 
 const enum StateFeatures {
@@ -81,6 +80,12 @@ export const componentsFeature = createFeature({
         componentTypes,
       })
     ),
+    // on(ComponentsActions.sortComponents, (state, { prevIndex, currIndex }) => {
+    //   return {
+    //     ...state,
+    //     sortKeys: move(state.sortKeys, prevIndex, currIndex),
+    //   };
+    // }),
     on(ComponentsActions.addComponent, (state, { component }) => {
       return {
         ...state,
@@ -108,10 +113,14 @@ export const componentsFeature = createFeature({
     })),
     on(ComponentsActions.clearSelectedComponent, (state) => ({
       ...state,
-      selectedComponent: null,
+      selectedComponentId: null,
     }))
   ),
-  extraSelectors: ({ selectComponents, selectSelectedComponentId }) => ({
+  extraSelectors: ({
+    selectComponents,
+    selectSelectedComponentId,
+    selectSortKeys,
+  }) => ({
     ...adapter.getSelectors(selectComponents),
 
     selectIsComponentSelected: createSelector(
@@ -138,7 +147,37 @@ export const appPageViewModel = createSelector(
   })
 );
 
-export const selectFilteredValues = pipe(
-  select(componentsFeature.selectAll),
-  filter((val) => val.length > 0)
+export const selectFilteredValues = createSelector(
+  componentsFeature.selectAll,
+  (components) => (components.length > 0 ? components : false)
 );
+
+export const selectSortedComponents = createSelector(
+  componentsFeature.selectSortKeys,
+  selectFilteredValues,
+  (sortKeys, components) => {
+    if (!components) return [];
+    return components;
+
+    // if (sortKeys.length === 0) return components;
+    // return sortKeys.map((key) => components[key]);
+  }
+);
+
+// function move(arr: any[], previous: number, currentIndex: number): any[] {
+//   arr = [...arr];
+//   while (previous < 0) {
+//     previous += arr.length;
+//   }
+//   while (currentIndex < 0) {
+//     currentIndex += arr.length;
+//   }
+//   if (currentIndex >= arr.length) {
+//     let k = currentIndex - arr.length;
+//     while (k-- + 1) {
+//       arr.push(k);
+//     }
+//   }
+//   arr.splice(currentIndex, 0, arr.splice(previous, 1)[0]);
+//   return arr;
+// }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormRendererComponent } from './form-renderer.component';
 
-import { FormRendererComponent } from './FormRendererComponent';
 
 describe('FormRendererComponent', () => {
   let component: FormRendererComponent;

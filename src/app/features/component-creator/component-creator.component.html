@@ -1,7 +1,8 @@
-<app-card
+<app-card 
   [title]="isEditMode ? 'Edit Control' : 'Generate FormControl Component'"
 >
-  <form [formGroup]="form" (ngSubmit)="handleSubmit()">
+
+  <form [formGroup]="form" >
     <div class="form-group">
       <label for="type">Choose Component:</label>
       <select
@@ -48,7 +49,7 @@
           Please provide a label.
         </div>
         <div class="invalid-feedback" *ngIf="label?.errors?.['minlength']">
-          Lable should be at least {{minLength}} charachters long.
+          Lable should be at least {{ minLength }} charachters long.
         </div>
       </div>
 
@@ -70,7 +71,7 @@
           class="invalid-feedback"
           *ngIf="placeholder?.errors?.['minlength']"
         >
-          Placeholder should be at least {{minLength}} charachters long.
+          Placeholder should be at least {{ minLength }} charachters long.
         </div>
       </div>
       <div class="form-group">
@@ -80,15 +81,23 @@
           id="controlName"
           class="form-control"
           formControlName="controlName"
-          [ngClass]="{ 'is-invalid': controlName?.invalid && controlName?.touched }"
+          [ngClass]="{
+            'is-invalid': controlName?.invalid && controlName?.touched
+          }"
         />
         <div class="invalid-feedback" *ngIf="controlName?.errors?.['required']">
           Please provide a name.
         </div>
-        <div class="invalid-feedback" *ngIf="controlName?.errors?.['minlength']">
-          Name should be at least {{minLength}} charachters long.
+        <div
+          class="invalid-feedback"
+          *ngIf="controlName?.errors?.['minlength']"
+        >
+          Name should be at least {{ minLength }} charachters long.
         </div>
-        <div class="invalid-feedback" *ngIf="controlName?.errors?.['nameExists']">
+        <div
+          class="invalid-feedback"
+          *ngIf="controlName?.errors?.['nameExists']"
+        >
           FormControl name already exists. Please provide a unique name.
         </div>
       </div>
@@ -154,6 +163,7 @@
             type="submit"
             class="btn btn-outline-primary m-2 col"
             [disabled]="!form.valid"
+            (click)="handleSubmit()"
           >
             Edit form control
           </button>
@@ -166,6 +176,8 @@
           </button>
         </div>
       </ng-template>
+      
     </div>
+
   </form>
 </app-card>

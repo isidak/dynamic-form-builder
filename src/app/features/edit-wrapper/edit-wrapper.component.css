@@ -1,0 +1,8 @@
+.handle {
+    position: relative;
+    margin-top: 0.5rem;
+    color: #ccc;
+    cursor: move;
+    width: 24px;
+    height: 24px;
+  }

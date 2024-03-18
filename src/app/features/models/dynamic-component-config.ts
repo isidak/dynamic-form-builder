@@ -5,6 +5,8 @@ export interface DynamicComponentConfig {
     id: string;
     name: string;
     inputs: BaseInput | Record<string, unknown>;
+    index?: string;
+    columnId?: string;
 }
 
 export interface BaseInput {

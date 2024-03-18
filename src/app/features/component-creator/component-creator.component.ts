@@ -13,6 +13,7 @@ import { Observable, of } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
 import { ComponentsMap } from '../models/components-map';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-component-creator',
@@ -25,6 +26,8 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
     NgClass,
     JsonPipe,
     CardComponent,
+    CdkDragHandle,
+    CdkDrag
   ],
   templateUrl: './component-creator.component.html',
   styleUrl: './component-creator.component.css',
@@ -89,7 +92,10 @@ export class ComponentCreatorComponent {
         readonly: [false],
         autocomplete: [''],
         type: [''],
-        label: ['', [Validators.required, Validators.minLength(this.minLength)]],
+        label: [
+          '',
+          [Validators.required, Validators.minLength(this.minLength)],
+        ],
         placeholder: ['', [Validators.minLength(this.minLength)]],
       }),
     });
@@ -98,7 +104,7 @@ export class ComponentCreatorComponent {
   handleSubmit() {
     if (this.form.valid) {
       this.formValue.emit({
-        form: this.form.value,
+        form: { ...this.form.value },
         isEdit: this.isEditMode,
       });
       this.form.reset();
