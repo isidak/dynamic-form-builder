@@ -33,8 +33,10 @@ const inputTypesInitialState: InputTypesState = {
   inputTypes: [],
 };
 
+
 // const sortComparer: Comparer<DynamicComponentConfig> = (c1, c2) =>
 //   c1.index?.localeCompare(c2.index || '') || 999;
+
 
 const adapter: EntityAdapter<DynamicComponentConfig> =
   createEntityAdapter<DynamicComponentConfig>();
