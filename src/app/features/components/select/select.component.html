@@ -1,0 +1,16 @@
+<div [formGroup]="parentFormGroup" class="form-group">
+  <label *ngIf="label" class="p-2 form-label" [for]="controlName">
+    {{ label }}
+  </label>
+  <select
+    [id]="controlName"
+    [formControlName]="controlName"
+    class="form-select form-select mb-3"
+    aria-label=".form-select"
+  >
+    <option value="" disabled>{{ placeholder }}</option>
+    <option *ngFor="let option of options" [value]="option.value">
+      {{ option.label }}
+    </option>
+  </select>
+</div>

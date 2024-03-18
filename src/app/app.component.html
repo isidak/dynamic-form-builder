@@ -4,41 +4,43 @@
       <h1>Dynamic form renderer</h1>
     </div>
   </div>
+  <!-- <ng-container *ngIf="vm$ | async as vm"> -->
 
+ 
   <div class="row justify-content-around align-self-start">
     <div class="col-lg-4" cdkDrag>
-      <app-editor
-        [selectedControl]="selectedControl$ | async"
+      <app-component-creator
+        [selectedComponent]="selectedComponent$ | async"
+        [componentTypes]="componentTypes$ | async"
         [inputTypes]="inputTypes$ | async"
         (formValue)="onEditorSubmit($event)"
         (editCanceled)="cancelEdit()"
-      ></app-editor>
+      ></app-component-creator>
     </div>
 
-    <ng-container *ngIf="formConfigs$ | async as formConfigs">
-      <div class="col-lg-6">
-        <app-form-renderer
-          [controlConfigs]="formConfigs"
-          (formSubmit)="submitForm($event)"
-          (editControl)="editControl($event)"
-          (removeControl)="removeControl($event)"
-        ></app-form-renderer>
-      </div>
+    <div class="col-lg-6">
+      <app-form-renderer
+        (submittedForm)="submitForm($event)"
+        (selected)="selectComponent($event)"
+        (remove)="removeComponent($event)"
+        [components$]="components$"
+      ></app-form-renderer>
+    </div>
 
-      <div class="row mt-auto justify-content-left align-self-start">
-        <div class="col-lg-4 mt-3">
-          <button
-            class="btn btn-outline-secondary"
-            (click)="displayGeneratedConfigs = !displayGeneratedConfigs"
-          >
-            <span *ngIf="!displayGeneratedConfigs">Show Generated Configs</span>
-            <span *ngIf="displayGeneratedConfigs">Hide Generated Configs</span>
-          </button>
-          <app-card *ngIf="displayGeneratedConfigs" title="Generated Code">
-            {{ formConfigs | json }}
-          </app-card>
-        </div>
+    <div class="row mt-auto justify-content-left align-self-start">
+      <div class="col-lg-4 mt-3">
+        <button
+          class="btn btn-outline-secondary"
+          (click)="displayGeneratedConfigs = !displayGeneratedConfigs"
+        >
+          <span *ngIf="!displayGeneratedConfigs">Show Generated Configs</span>
+          <span *ngIf="displayGeneratedConfigs">Hide Generated Configs</span>
+        </button>
+        <app-card *ngIf="displayGeneratedConfigs" title="Generated Code">
+          {{ components$ | async | json }}
+        </app-card>
       </div>
-    </ng-container>
+    </div>
   </div>
+<!-- </ng-container> -->
 </div>

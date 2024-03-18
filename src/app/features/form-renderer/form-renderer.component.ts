@@ -1,86 +1,118 @@
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
-  ChangeDetectionStrategy,
+  AsyncPipe,
+  JsonPipe,
+  NgComponentOutlet,
+  NgFor,
+  NgIf,
+} from '@angular/common';
+import {
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
-  OnChanges,
+  OnInit,
   Output,
-  SimpleChanges,
-  ViewChild,
-  ViewContainerRef,
+  inject
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ControlConfig } from '../dynamic-control/control-config';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  Observable,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  mergeMap,
+  of
+} from 'rxjs';
+import { InputComponent } from '../components/input/input.component';
+import { DynamicComponentRenderedComponent } from '../dynamic-component-rendered/dynamic-component-rendered.component';
+import { EditWrapperComponent } from '../edit-wrapper/edit-wrapper.component';
+import { ComponentImporterService } from './../../services/component-importer.service';
+import { DynamicComponentConfig } from './../models/dynamic-component-config';
 
 @Component({
   selector: 'app-form-renderer',
   standalone: true,
-  imports: [ReactiveFormsModule, DragDropModule],
+  imports: [
+    ReactiveFormsModule,
+    DragDropModule,
+    InputComponent,
+    EditWrapperComponent,
+    DynamicComponentRenderedComponent,
+    NgComponentOutlet,
+    NgFor,
+    JsonPipe,
+    AsyncPipe,
+    NgIf,
+  ],
   templateUrl: './form-renderer.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FormRendererComponent implements OnChanges {
-  @Input() controlConfigs: ControlConfig[];
-  @Output() formSubmit = new EventEmitter();
-  @Output() editControl = new EventEmitter();
-  @Output() removeControl = new EventEmitter();
+export class FormRendererComponent implements OnInit {
+  @Input() components$: Observable<any[]>;
+  // componentsCopy: any[];
 
-  @ViewChild('dynamicControl', { read: ViewContainerRef })
-  dynamicControl: ViewContainerRef;
+
+  @Output() submittedForm = new EventEmitter();
+  @Output() selected = new EventEmitter();
+  @Output() remove = new EventEmitter();
+
+  importedComponents$: Observable<DynamicComponentConfig[]>;
+
+  destroyRef = inject(DestroyRef);
 
   form = new FormGroup({});
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['controlConfigs'].isFirstChange()) {
-      this.createControls();
-    } else if (
-      changes['controlConfigs'].currentValue !==
-      changes['controlConfigs'].previousValue
-    ) {
-      this.dynamicControl.clear();
-      this.createControls();
-    }
-  }
+  private componentImporterService = inject(ComponentImporterService);
 
-  private createControls() {
-    if (this.controlConfigs?.length > 0) {
-      this.controlConfigs.forEach((controlConfig) => {
-        for (const key in Object.entries(this.form.controls)) {
-          if (key === controlConfig.name) {
-            return;
-          }
-        }
-        if (controlConfig.type !== 'submit') {
-          this.form.addControl(controlConfig.name, new FormControl());
-        }
-
-        this.createComponent(controlConfig);
-      });
-    }
-  }
-
-  private async createComponent(controlConfig: ControlConfig) {
-    const component = (
-      await import('../dynamic-control/dynamic-control.component')
-    ).DynamicControlComponent;
-    const control = this.dynamicControl.createComponent(component);
-    control.setInput('controlConfig', controlConfig);
-    control.setInput('formGroup', this.form);
-    const editSub = control.instance.editControlEvent.subscribe(
-      (controlConfig: ControlConfig) => {
-        this.editControl.emit(controlConfig);
+  ngOnInit(): void {
+    this.importedComponents$ = this.components$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      distinctUntilChanged(
+        (prev, curr) => prev.length === 0 && curr.length === 0
+      ),
+      mergeMap((components) => {
+        if(components.length === 0) {
+          return of([]);
+        } else {
+        return combineLatest(
+          components.map((component) => this.importComponent(component))
+        )}
       }
+      ),
+      // tap((components) => this.componentsCopy = [...components]),
+      
     );
-    const removeSub = control.instance.removeControlEvent.subscribe(
-      (controlConfig: ControlConfig) => {
-        this.removeControl.emit(controlConfig);
-        this.form.removeControl(controlConfig.name);
-         }
-    );
-    control.onDestroy(() => {
-      editSub.unsubscribe();
-      removeSub.unsubscribe();
-    });
+
+  }
+
+  removeComponent(id: string) {
+    this.remove.emit(id);
+  }
+
+  selectComponent(id: string) {
+    this.selected.emit(id);
+  }
+
+  submitForm() {
+    console.log(this.form.value);
+    this.submittedForm.emit(this.form.value);
+  }
+
+  importComponent(configs: any) {
+    return this.componentImporterService
+      .getImportedComponent(configs.name)
+      .pipe(
+        map((component) => {
+          return {
+            ...configs,
+            component,
+          };
+        })
+      );
+  }
+
+  trackById(index: number, item: any) {
+    return item.id;
   }
 }
