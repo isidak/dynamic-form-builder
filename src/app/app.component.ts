@@ -3,7 +3,6 @@ import {
   CdkDragDrop,
   CdkDragHandle,
   DragDropModule,
-  DragDropModule,
 } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
