@@ -82,6 +82,12 @@ export const componentsFeature = createFeature({
         componentTypes,
       })
     ),
+    on(ComponentsActions.setComponents, (state, { components }) => {
+      return {
+        ...state,
+        components: adapter.setAll(components, state.components),
+      };
+    }),
     // on(ComponentsActions.sortComponents, (state, { prevIndex, currIndex }) => {
     //   return {
     //     ...state,
@@ -116,7 +122,7 @@ export const componentsFeature = createFeature({
     on(ComponentsActions.clearSelectedComponent, (state) => ({
       ...state,
       selectedComponentId: null,
-    }))
+    })),
   ),
   extraSelectors: ({
     selectComponents,

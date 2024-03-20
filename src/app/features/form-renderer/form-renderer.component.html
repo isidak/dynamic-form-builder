@@ -1,6 +1,6 @@
 <form [formGroup]="form" class="container" cdkDropList (cdkDropListDropped)="drop($event)" #delay>
   <ng-container *ngIf="importedComponents$ | async as components">
-    <ng-container 
+    <ng-container
       *ngFor="let component of componentsCopy; let i = index; trackBy: trackById"
     >
       <app-edit-wrapper
@@ -15,11 +15,19 @@
       </app-edit-wrapper>
     </ng-container>
     <button
-      type="submit"
-      class="btn btn-primary mt-2"
-      (click)="submitForm()"
+      type="button"
+      class="btn btn-primary m-2"
+      (click)="saveToLocalStorage.emit()"
     >
-      Submit
+      Save to local storage
     </button>
+
+<!--    <button-->
+<!--      type="button"-->
+<!--      class="btn btn-primary m-2"-->
+<!--      (click)="submitForm()"-->
+<!--    >-->
+<!--      Open generated form-->
+<!--    </button>-->
   </ng-container>
 </form>

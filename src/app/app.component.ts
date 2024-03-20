@@ -10,7 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, map, tap } from 'rxjs';
+import { Subject, map, tap, Observable, take, switchMap } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
@@ -27,6 +27,8 @@ import {
   inputsFeature,
   selectSortedComponents,
 } from './store/app.state';
+import { StorageMap } from "@ngx-pwa/local-storage";
+import { ComponentsMap } from "./features/models/components-map";
 
 @Component({
   selector: 'app-root',
@@ -48,6 +50,7 @@ import {
     CdkDragHandle,
     DragDropModule,
     InputComponent,
+
   ],
 })
 export class AppComponent implements OnInit {
@@ -56,13 +59,14 @@ export class AppComponent implements OnInit {
   private store = inject(Store);
   private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
+  private storage = inject(StorageMap)
 
   displayGeneratedConfigs = false;
   // vm$ = this.store.select(appPageViewModel);
-  inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
-  components$ = this.store.select(selectSortedComponents);
-  componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
-  selectedComponent$ = this.store.select(
+  inputTypes$: Observable<string[]> = this.store.select(inputsFeature.selectInputTypes);
+  components$: Observable<DynamicComponentConfig[]> = this.store.select(selectSortedComponents);
+  componentTypes$: Observable<ComponentsMap[] | null> = this.store.select(componentsFeature.selectComponentTypes);
+  selectedComponent$: Observable<DynamicComponentConfig | null | undefined> = this.store.select(
     componentsFeature.selectSelectedComponent
   );
 
@@ -81,7 +85,7 @@ export class AppComponent implements OnInit {
           id: this.generateId().toString(),
         })),
         tap((component: DynamicComponentConfig) =>
-          this.store.dispatch(ComponentsActions.addComponent({ component }))
+          this.store.dispatch(ComponentsActions.addComponent({component}))
         )
       )
       .subscribe();
@@ -99,23 +103,25 @@ export class AppComponent implements OnInit {
 
   submitForm(value: any) {
     this.dynamicComponentsService.submitForm(value);
+
   }
 
   drop(event: CdkDragDrop<string[]>) {
     // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
     // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
   }
+
   sortComponents(positions: any) {
     // console.log('positions', positions);
     // this.store.dispatch(ComponentsActions.sortComponents(positions));
   }
 
   selectComponent(id: string) {
-    this.store.dispatch(ComponentsActions.selectComponent({ id }));
+    this.store.dispatch(ComponentsActions.selectComponent({id}));
   }
 
   removeComponent(id: string) {
-    this.store.dispatch(ComponentsActions.removeComponent({ id }));
+    this.store.dispatch(ComponentsActions.removeComponent({id}));
     if (
       this.store.selectSignal(componentsFeature.selectSelectedComponentId)() ===
       id
@@ -153,5 +159,30 @@ export class AppComponent implements OnInit {
       (Number(
         components.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
       ) ?? 0) + 1);
+  }
+
+  saveToLocalStorage() {
+    this.components$.pipe(
+      take(1),
+      switchMap((components) =>
+        this.storage.set('form', components))
+    ).subscribe();
+  }
+
+
+  saveOrder(cmps: DynamicComponentConfig[]) {
+    const components: DynamicComponentConfig[] = this.updateIndex(cmps);
+    this.store.dispatch(ComponentsActions.setComponents({components}));
+
+  }
+
+  private updateIndex(componentsCopy: DynamicComponentConfig[]) {
+    const components = componentsCopy.map((component: DynamicComponentConfig) => {
+      const cmpClone = {...component};
+      delete cmpClone.component;
+      cmpClone.index = componentsCopy.indexOf(component).toString();
+      return cmpClone;
+    });
+    return components;
   }
 }
