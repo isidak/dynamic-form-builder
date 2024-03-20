@@ -61,6 +61,8 @@ export class FormRendererComponent implements OnInit {
   @Output() selected = new EventEmitter();
   @Output() remove = new EventEmitter();
   @Output() itemsDragged = new EventEmitter();
+  @Output() saveToLocalStorage = new EventEmitter();
+  @Output() saveOrder = new EventEmitter();
 
   importedComponents$: Observable<DynamicComponentConfig[]>;
 
@@ -129,5 +131,6 @@ export class FormRendererComponent implements OnInit {
       event.previousIndex,
       event.currentIndex
     );
+    this.saveOrder.emit( this.componentsCopy);
   }
 }

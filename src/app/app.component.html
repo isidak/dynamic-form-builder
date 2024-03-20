@@ -24,6 +24,8 @@
         (itemsDragged)="sortComponents($event)"
         (remove)="removeComponent($event)"
         [components$]="components$"
+        (saveToLocalStorage)="saveToLocalStorage()"
+        (saveOrder)="saveOrder($event)"
       ></app-form-renderer>
     </div>
 
