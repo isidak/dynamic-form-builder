@@ -1,4 +1,4 @@
-<app-card 
+<app-card
   [title]="isEditMode ? 'Edit Control' : 'Generate FormControl Component'"
 >
 
@@ -154,6 +154,7 @@
         type="submit"
         class="btn btn-outline-primary mx-auto d-block"
         [disabled]="!form.valid"
+        (click)="handleSubmit()"
       >
         Create form control
       </button>
@@ -176,7 +177,7 @@
           </button>
         </div>
       </ng-template>
-      
+
     </div>
 
   </form>
