@@ -1,0 +1,1 @@
+import{Aa as i,Hb as r,Lb as p,vb as o,wb as a}from"./chunk-UCJPPNZE.js";var c=(()=>{let e=class e{};e.\u0275fac=function(n){return new(n||e)},e.\u0275cmp=i({type:e,selectors:[["app-file-input"]],standalone:!0,features:[p],decls:2,vars:0,template:function(n,f){n&1&&(o(0,"p"),r(1,"file-input works!"),a())}});let t=e;return t})();export{c as FileInputComponent};
