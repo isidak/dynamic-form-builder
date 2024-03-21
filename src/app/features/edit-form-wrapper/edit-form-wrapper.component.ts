@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, inject, OnInit, Output } from '@angular/core';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from "@angular/cdk/drag-drop";
 import { AsyncPipe, JsonPipe, NgComponentOutlet, NgFor, NgIf } from "@angular/common";
 import { EditComponentWrapperComponent } from "../edit-component-wrapper/edit-component-wrapper.component";
@@ -32,6 +32,8 @@ export class EditFormWrapperComponent extends FormRendererComponent  implements 
   @Output() itemsDragged = new EventEmitter();
   @Output() saveToLocalStorage = new EventEmitter();
 
+  // private modalService = inject(NgbModal);
+
 
   removeComponent(id: string) {
     this.remove.emit(id);
@@ -50,5 +52,8 @@ export class EditFormWrapperComponent extends FormRendererComponent  implements 
     this.itemsDragged.emit( this.componentsCopy);
   }
 
+  openModal() {
+
+  }
 
 }
