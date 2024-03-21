@@ -1,4 +1,3 @@
-import { DragDropModule, } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgComponentOutlet, NgFor, NgIf, } from '@angular/common';
 import { Component, DestroyRef, EventEmitter, inject, Input, OnInit, Output, } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,7 +5,6 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { combineLatest, distinctUntilChanged, map, mergeMap, Observable, of, tap, } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
 import { DynamicComponentRenderedComponent } from '../dynamic-component-rendered/dynamic-component-rendered.component';
-import { EditComponentWrapperComponent } from '../edit-component-wrapper/edit-component-wrapper.component';
 import { ComponentImporterService } from '../../services/component-importer.service';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -15,9 +13,7 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    DragDropModule,
     InputComponent,
-    EditComponentWrapperComponent,
     DynamicComponentRenderedComponent,
     NgComponentOutlet,
     NgFor,
@@ -44,7 +40,8 @@ export class FormRendererComponent implements OnInit {
 
 
   submitForm() {
-    if (this.form.valid) this.submittedForm.emit(this.form.value);
+    if (this.form.valid)
+      console.log(this.form.value);
     (Object.values(this.form.controls) as FormControl[]).forEach((control) => control.markAsTouched());
   }
 

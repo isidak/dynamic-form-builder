@@ -1,7 +1,6 @@
 
 export interface DynamicComponentConfig {
-    component: any;
-    importedCmp?: any;
+    component?: any;
     id: string;
     name: string;
     inputs: BaseInput | Record<string, unknown>;
@@ -36,8 +35,8 @@ export interface Option {
 //     MaxLength = 'maxLength',
 //     Pattern = 'pattern',
 //   }
-  
-  
+
+
   export enum ComponentTypeNames {
     Input = 'input',
     Select = 'select',
@@ -46,7 +45,7 @@ export interface Option {
     Textarea = 'textarea',
     File = 'file',
   }
-  
+
   export enum InputTypes {
     Text = 'text',
     Number = 'number',
@@ -58,7 +57,7 @@ export interface Option {
     Textarea = 'textarea',
     Checkbox = 'checkbox',
   }
-  
+
 //   export enum ComponentInputNames {
 //       ControlName = 'controlName',
 //       Type = 'type',
@@ -71,7 +70,7 @@ export interface Option {
 //       Max = 'max',
 //       Validators = 'validators',
 //     }
-    
+
     // export enum ComponentInputFeatures {
     //   Readonly = 'readonly',
     //   Autocompolete = 'autocomplete',

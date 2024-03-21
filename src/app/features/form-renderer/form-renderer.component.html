@@ -3,18 +3,18 @@
     <ng-container
       *ngFor="let component of componentsCopy; let i = index; trackBy: trackById"
     >
-        <!-- <app-dynamic-component-renderer [component]="component"> </app-dynamic-component-renderer> -->
-        <ng-container
-          *ngComponentOutlet="component.component; inputs: component['inputs']"
-        >
-        </ng-container>
+      <!-- <app-dynamic-component-renderer [component]="component"> </app-dynamic-component-renderer> -->
+      <ng-container
+        *ngComponentOutlet="component.component; inputs: component['inputs']"
+      >
+      </ng-container>
     </ng-container>
     <button
       type="button"
       class="btn btn-primary m-2"
       (click)="submitForm()"
     >
-      Submit
+      Submit Form to Console
     </button>
   </ng-container>
 </form>
