@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
   private store = inject(Store);
   private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
-  private storage = inject(StorageMap)
+  private storage = inject(StorageMap);
 
   ngOnInit(): void {
     this.loadDataToStore();

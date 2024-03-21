@@ -1,16 +1,8 @@
-import { Injectable, inject } from '@angular/core';
-import cloneDeep from 'clone-deep';
+import { inject, Injectable } from '@angular/core';
 import clone from 'just-clone';
-import {
-  Observable,
-  delay,
-  of
-} from 'rxjs';
-import {
-  ComponentTypeNames,
-  InputTypes
-} from '../features/models/dynamic-component-config';
-import { ComponentImporterService } from './component-importer.service';
+import { delay, map, Observable, of } from 'rxjs';
+import { ComponentTypeNames, DynamicComponentConfig, InputTypes } from '../features/models/dynamic-component-config';
+import { StorageMap } from "@ngx-pwa/local-storage";
 
 
 const components = [
@@ -89,11 +81,11 @@ const components = [
       label: 'Choose Component type:',
       placeholder: 'select a component type',
       options: [
-        { value: 'input', label: 'Input' },
-        { value: 'select', label: 'Select' },
-        { value: 'checkbox', label: 'Checkbox' },
-        { value: 'textarea', label: 'Textarea' },
-        { value: 'file', label: 'File' },
+        {value: 'input', label: 'Input'},
+        {value: 'select', label: 'Select'},
+        {value: 'checkbox', label: 'Checkbox'},
+        {value: 'textarea', label: 'Textarea'},
+        {value: 'file', label: 'File'},
       ],
       required: true,
     },
@@ -109,14 +101,14 @@ const components = [
       label: 'Choose FormControl type:',
       placeholder: 'select a control type',
       options: [
-        { value: 'text', label: 'Text' },
-        { value: 'number', label: 'Number' },
-        { value: 'email', label: 'Email' },
-        { value: 'password', label: 'Password' },
-        { value: 'date', label: 'Date' },
-        { value: 'time', label: 'Time' },
-        { value: 'file', label: 'File' },
-        { value: 'textarea', label: 'Textarea' },
+        {value: 'text', label: 'Text'},
+        {value: 'number', label: 'Number'},
+        {value: 'email', label: 'Email'},
+        {value: 'password', label: 'Password'},
+        {value: 'date', label: 'Date'},
+        {value: 'time', label: 'Time'},
+        {value: 'file', label: 'File'},
+        {value: 'textarea', label: 'Textarea'},
       ],
       required: true,
     },
@@ -142,10 +134,11 @@ const inputTypes: InputTypes[] = [...Object.values(InputTypes)];
   providedIn: 'root',
 })
 export class DynamicComponentsService {
-  private componentImporterService = inject(ComponentImporterService);
+  private storage = inject(StorageMap);
 
-  getComponents(): Observable<any[]> {
-    return of(cloneDeep(components)).pipe(
+  getComponents(): Observable<DynamicComponentConfig[]> {
+    return this.storage.get('form').pipe(
+      map((form: any) => Array.isArray(form) ? (form as DynamicComponentConfig[]) : [...components as DynamicComponentConfig[]]),
       delay(20)
     );
   }
@@ -154,7 +147,7 @@ export class DynamicComponentsService {
     console.log(value);
   }
 
-  getInputTypes(): Observable<string[]> {
-    return of(clone(inputTypes)).pipe(delay(1));
+  getInputTypes(): Observable<InputTypes[]> {
+    return of(clone(inputTypes)).pipe(delay(1))
   }
 }
