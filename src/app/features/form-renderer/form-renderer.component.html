@@ -1,33 +1,20 @@
-<form [formGroup]="form" class="container" cdkDropList (cdkDropListDropped)="drop($event)" #delay>
+<form [formGroup]="form" class="container">
   <ng-container *ngIf="importedComponents$ | async as components">
     <ng-container
       *ngFor="let component of componentsCopy; let i = index; trackBy: trackById"
     >
-      <app-edit-wrapper
-        (remove)="removeComponent(component.id)"
-        (edit)="selectComponent(component.id)"
-      >
         <!-- <app-dynamic-component-renderer [component]="component"> </app-dynamic-component-renderer> -->
         <ng-container
           *ngComponentOutlet="component.component; inputs: component['inputs']"
         >
         </ng-container>
-      </app-edit-wrapper>
     </ng-container>
     <button
       type="button"
       class="btn btn-primary m-2"
-      (click)="saveToLocalStorage.emit()"
+      (click)="submitForm()"
     >
-      Save to local storage
+      Submit
     </button>
-
-<!--    <button-->
-<!--      type="button"-->
-<!--      class="btn btn-primary m-2"-->
-<!--      (click)="submitForm()"-->
-<!--    >-->
-<!--      Open generated form-->
-<!--    </button>-->
   </ng-container>
 </form>
