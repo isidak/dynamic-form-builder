@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { map, Observable, Subject, switchMap, take, tap } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
@@ -14,9 +14,9 @@ import { DynamicComponentsService } from './services/dynamic-components.service'
 import { CardComponent } from './shared/card/card.component';
 import { ComponentsActions, ComponentsAPIActions, InputTypesAPIActions, } from './store/app.actions';
 import { componentsFeature, inputsFeature, selectSortedComponents, } from './store/app.state';
-import { StorageMap } from "@ngx-pwa/local-storage";
 import { ComponentsMap } from "./features/models/components-map";
 import { EditFormWrapperComponent } from "./features/edit-form-wrapper/edit-form-wrapper.component";
+import { LocalStorageService } from "./services/local-storage.service";
 
 @Component({
   selector: 'app-root',
@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
   private store = inject(Store);
   private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
-  private storage = inject(StorageMap);
+  private localStorageService = inject(LocalStorageService);
 
   ngOnInit(): void {
     this.loadDataToStore();
@@ -92,6 +92,7 @@ export class AppComponent implements OnInit {
     ) {
       this.store.dispatch(ComponentsActions.clearSelectedComponent());
     }
+    this.saveToLocalStorage();
   }
 
   saveComponent(component: DynamicComponentConfig) {
@@ -101,6 +102,7 @@ export class AppComponent implements OnInit {
       })
     );
     this.store.dispatch(ComponentsActions.clearSelectedComponent());
+    this.saveToLocalStorage();
   }
 
   cancelEdit() {
@@ -121,17 +123,19 @@ export class AppComponent implements OnInit {
   }
 
   saveToLocalStorage() {
-    this.components$.pipe(
-      take(1),
-      switchMap((components) =>
-        this.storage.set('form', components))
-    ).subscribe();
+    this.localStorageService.saveToLocalStorage();
+  }
+
+  clearLocalStorage() {
+    this.localStorageService.delete();
+    this.store.dispatch(ComponentsAPIActions.loadComponents());
   }
 
 
   sortComponents(cmps: DynamicComponentConfig[]) {
     const components: DynamicComponentConfig[] = this.updateIndex(cmps);
     this.store.dispatch(ComponentsActions.setComponents({components}));
+    this.saveToLocalStorage();
 
   }
 
@@ -155,7 +159,10 @@ export class AppComponent implements OnInit {
         })),
         tap((component: DynamicComponentConfig) =>
           this.store.dispatch(ComponentsActions.addComponent({component}))
-        )
+        ),
+        tap(() =>
+          this.localStorageService.saveToLocalStorage()
+        ),
       )
       .subscribe();
   }

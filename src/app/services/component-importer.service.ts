@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import memo from 'memo-decorator';
-import { Observable, delay, from, mergeMap, of, shareReplay } from 'rxjs';
+import { delay, from, mergeMap, Observable, of, shareReplay } from 'rxjs';
 import { ComponentsMap } from '../features/models/components-map';
 import { ComponentTypeNames } from '../features/models/dynamic-component-config';
 

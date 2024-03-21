@@ -1,5 +1,5 @@
 import { JsonPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
 import {
   AbstractControl,
   AsyncValidatorFn,
@@ -9,11 +9,13 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Observable, of } from 'rxjs';
+import { map, Observable, of, take, withLatestFrom } from 'rxjs';
 import { CardComponent } from '../../shared/card/card.component';
 import { ComponentsMap } from '../models/components-map';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { Store } from "@ngrx/store";
+import { componentsFeature } from "../../store/app.state";
 
 @Component({
   selector: 'app-component-creator',
@@ -32,7 +34,7 @@ import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
   templateUrl: './component-creator.component.html',
   styleUrl: './component-creator.component.css',
 })
-export class ComponentCreatorComponent {
+export class ComponentCreatorComponent implements OnInit {
   @Input() set selectedComponent(
     value: DynamicComponentConfig | null | undefined
   ) {
@@ -40,28 +42,30 @@ export class ComponentCreatorComponent {
     value === null ? (this.isEditMode = false) : (this.isEditMode = true);
     this.patchForm(value!);
   }
-  @Output() formValue = new EventEmitter();
-  @Output() editCanceled = new EventEmitter();
+
   @Input() inputTypes: string[] | null = [];
   @Input() componentTypes: ComponentsMap[] | null = [];
   @Input() minLength = 3;
-
-  private fb = inject(FormBuilder);
+  @Output() formValue = new EventEmitter();
+  @Output() editCanceled = new EventEmitter();
 
   form: FormGroup;
-
   isEditMode = false;
+  private fb = inject(FormBuilder);
+  private store = inject(Store);
 
-  isSubmit = false;
   get type() {
     return this.form.get('inputs')?.get('type');
   }
+
   get controlName() {
     return this.form.get('inputs')?.get('controlName');
   }
+
   get label() {
     return this.form.get('inputs')?.get('label');
   }
+
   get placeholder() {
     return this.form.get('inputs')?.get('placeholder');
   }
@@ -70,22 +74,36 @@ export class ComponentCreatorComponent {
     this.form = this.createForm();
   }
 
-  patchForm(control: DynamicComponentConfig | null) {
+  handleSubmit() {
+    if (this.form.valid) {
+      this.formValue.emit({
+        form: {...this.form.value},
+        isEdit: this.isEditMode,
+      });
+      this.form.reset();
+      this.isEditMode = false;
+    }
+  }
+
+  cancelEdit() {
+    this.form.reset();
+    this.isEditMode = false;
+    this.editCanceled.emit();
+  }
+
+  private patchForm(control: DynamicComponentConfig | null) {
     control === null ? this.form.reset() : this.form.patchValue(control);
   }
 
-  createForm(): FormGroup<any> {
+  private createForm(): FormGroup<any> {
     return this.fb.group({
       id: [''],
       name: [''],
       inputs: this.fb.group({
         controlName: [
-          {
-            value: '',
-            disabled: this.isEditMode,
-          },
+          '',
           [Validators.required, Validators.minLength(this.minLength)],
-          // [this.isValidName()],
+          [this.isValidName()],
         ],
         required: [false],
         minLength: [0],
@@ -101,37 +119,23 @@ export class ComponentCreatorComponent {
     });
   }
 
-  handleSubmit() {
-    if (this.form.valid) {
-      this.formValue.emit({
-        form: { ...this.form.value },
-        isEdit: this.isEditMode,
-      });
-      this.form.reset();
-      this.isEditMode = false;
-    }
-  }
-
-  cancelEdit() {
-    this.form.reset();
-    this.isEditMode = false;
-    this.editCanceled.emit();
-  }
-
   private isValidName(): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      return of(null);
-      //   const value = control.value;
-      //   if (this.isEditMode) return of(null);
+      const value = control.value;
 
-      //   return this.store.select(controlsFeature.selectControls).pipe(
-      //     take(1),
-      //     map((configs) => {
-      //       const isNameExists = configs.some((config) => config.name === value);
-      //       return isNameExists ? { nameExists: true } : null;
-      //     })
-      //   );
-      // };
+      if (this.isEditMode) return of(null);
+      return this.store.select(componentsFeature.selectAll).pipe(
+        take(1),
+        withLatestFrom(this.store.select(componentsFeature.selectSelectedComponentId)),
+        map(([configs, selected]) => {
+          if (selected !== null) {
+            const selectedName = configs.find((config) => config.id === selected)?.inputs.controlName;
+            if (selectedName === value) return null;
+          }
+          const isNameExists = configs.some((config) => config.inputs.controlName === value);
+          return isNameExists ? {nameExists: true} : null;
+        })
+      );
     };
-  }
+  };
 }

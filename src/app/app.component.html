@@ -20,6 +20,7 @@
       <ng-container *ngIf="hasComponents$ | async">
         <app-edit-form-wrapper
           (saveToLocalStorage)="saveToLocalStorage()"
+          (clearLocalStorage)="clearLocalStorage()"
           (submittedForm)="submitForm($event)"
           (selected)="selectComponent($event)"
           (itemsDragged)="sortComponents($event)"

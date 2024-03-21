@@ -32,6 +32,7 @@ export class EditFormWrapperComponent extends FormRendererComponent implements O
     @Output() remove = new EventEmitter();
     @Output() itemsDragged = new EventEmitter();
     @Output() saveToLocalStorage = new EventEmitter();
+    @Output() clearLocalStorage = new EventEmitter();
 
     private modalService = inject(NgbModal);
 
