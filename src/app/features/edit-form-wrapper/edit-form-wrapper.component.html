@@ -1,0 +1,44 @@
+<form [formGroup]="form" class="container" cdkDropList (cdkDropListDropped)="drop($event)" #delay>
+    <ng-container *ngIf="importedComponents$ | async as components">
+        <ng-container
+                *ngFor="let component of componentsCopy; let i = index; trackBy: trackById"
+        >
+            <app-edit-component-wrapper
+                    (remove)="removeComponent(component.id)"
+                    (edit)="selectComponent(component.id)"
+            >
+                <ng-container
+                        *ngComponentOutlet="component.component; inputs: component['inputs']"
+                >
+                </ng-container>
+            </app-edit-component-wrapper>
+        </ng-container>
+        <div class="row justify-content-around">
+
+            <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm m-2 col"
+                    (click)="openModal()"
+            >Open generated form
+
+            </button>
+
+            <button
+                    type="button"
+                    class="btn btn-outline-info btn-sm m-2 col"
+                    (click)="consoleFormModel()"
+            >
+                Console form data model
+            </button>
+            <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm m-2 col"
+                    (click)="clearLocalStorage.emit()"
+            >
+                Reset to initial example
+            </button>
+        </div>
+    </ng-container>
+</form>
+
+

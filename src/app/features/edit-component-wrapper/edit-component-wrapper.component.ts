@@ -2,13 +2,13 @@ import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
-  selector: 'app-edit-wrapper',
+  selector: 'app-edit-component-wrapper',
   standalone: true,
   imports: [CdkDrag, CdkDragHandle],
-  templateUrl: './edit-wrapper.component.html',
-  styleUrl: './edit-wrapper.component.css'
+  templateUrl: './edit-component-wrapper.component.html',
+  styleUrl: './edit-component-wrapper.component.css'
 })
-export class EditWrapperComponent {
+export class EditComponentWrapperComponent {
   @Output() remove = new EventEmitter();
   @Output() edit = new EventEmitter();
 

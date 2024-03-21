@@ -4,10 +4,9 @@
       <h1>Dynamic form renderer</h1>
     </div>
   </div>
-  <!-- <ng-container *ngIf="vm$ | async as vm"> -->
 
   <div class="row justify-content-around align-self-start">
-    <div class="col-lg-4" >
+    <div class="col-lg-4">
       <app-component-creator
         [selectedComponent]="selectedComponent$ | async"
         [componentTypes]="componentTypes$ | async"
@@ -18,15 +17,17 @@
     </div>
 
     <div class="col-lg-6">
-      <app-form-renderer
-        (submittedForm)="submitForm($event)"
-        (selected)="selectComponent($event)"
-        (itemsDragged)="sortComponents($event)"
-        (remove)="removeComponent($event)"
-        [components$]="components$"
-        (saveToLocalStorage)="saveToLocalStorage()"
-        (saveOrder)="saveOrder($event)"
-      ></app-form-renderer>
+      <ng-container *ngIf="hasComponents$ | async">
+        <app-edit-form-wrapper
+          (saveToLocalStorage)="saveToLocalStorage()"
+          (clearLocalStorage)="clearLocalStorage()"
+          (submittedForm)="submitForm($event)"
+          (selected)="selectComponent($event)"
+          (itemsDragged)="sortComponents($event)"
+          (remove)="removeComponent($event)"
+          [components$]="components$">
+        </app-edit-form-wrapper>
+      </ng-container>
     </div>
 
     <div class="row mt-auto justify-content-left align-self-start">
@@ -44,5 +45,4 @@
       </div>
     </div>
   </div>
-  <!-- </ng-container> -->
 </div>

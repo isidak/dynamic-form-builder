@@ -1,34 +1,22 @@
-import {
-  CdkDrag,
-  CdkDragDrop,
-  CdkDragHandle,
-  DragDropModule,
-} from '@angular/cdk/drag-drop';
+import { CdkDrag, CdkDragHandle, DragDropModule, } from '@angular/cdk/drag-drop';
 import { AsyncPipe, JsonPipe, NgIf, NgStyle } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ResizableModule } from 'angular-resizable-element';
-import { Subject, map, tap, Observable, take, switchMap } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { ComponentCreatorComponent } from './features/component-creator/component-creator.component';
 import { InputComponent } from './features/components/input/input.component';
 import { FormRendererComponent } from './features/form-renderer/form-renderer.component';
 import { DynamicComponentConfig } from './features/models/dynamic-component-config';
 import { DynamicComponentsService } from './services/dynamic-components.service';
 import { CardComponent } from './shared/card/card.component';
-import {
-  ComponentsAPIActions,
-  ComponentsActions,
-  InputTypesAPIActions,
-} from './store/app.actions';
-import {
-  componentsFeature,
-  inputsFeature,
-  selectSortedComponents,
-} from './store/app.state';
-import { StorageMap } from "@ngx-pwa/local-storage";
+import { ComponentsActions, ComponentsAPIActions, InputTypesAPIActions, } from './store/app.actions';
+import { componentsFeature, inputsFeature, selectSortedComponents, } from './store/app.state';
 import { ComponentsMap } from "./features/models/components-map";
+import { EditFormWrapperComponent } from "./features/edit-form-wrapper/edit-form-wrapper.component";
+import { LocalStorageService } from "./services/local-storage.service";
 
 @Component({
   selector: 'app-root',
@@ -40,6 +28,7 @@ import { ComponentsMap } from "./features/models/components-map";
     ComponentCreatorComponent,
     FormRendererComponent,
     CardComponent,
+    EditFormWrapperComponent,
     JsonPipe,
     NgIf,
     AsyncPipe,
@@ -56,40 +45,25 @@ import { ComponentsMap } from "./features/models/components-map";
 export class AppComponent implements OnInit {
   title = 'dynamic-form-builder';
 
+  displayGeneratedConfigs = false;
+  inputTypes$: Observable<string[]>;
+  components$: Observable<DynamicComponentConfig[]>;
+  hasComponents$: Observable<boolean>;
+  componentTypes$: Observable<ComponentsMap[] | null>;
+  selectedComponent$: Observable<DynamicComponentConfig | null | undefined>;
+  addComponent$ = new Subject<DynamicComponentConfig>();
+
   private store = inject(Store);
   private dynamicComponentsService = inject(DynamicComponentsService);
   private destroyRef = inject(DestroyRef);
-  private storage = inject(StorageMap)
-
-  displayGeneratedConfigs = false;
-  // vm$ = this.store.select(appPageViewModel);
-  inputTypes$: Observable<string[]> = this.store.select(inputsFeature.selectInputTypes);
-  components$: Observable<DynamicComponentConfig[]> = this.store.select(selectSortedComponents);
-  componentTypes$: Observable<ComponentsMap[] | null> = this.store.select(componentsFeature.selectComponentTypes);
-  selectedComponent$: Observable<DynamicComponentConfig | null | undefined> = this.store.select(
-    componentsFeature.selectSelectedComponent
-  );
-
-  addComponent$ = new Subject<DynamicComponentConfig>();
+  private localStorageService = inject(LocalStorageService);
 
   ngOnInit(): void {
-    this.store.dispatch(InputTypesAPIActions.loadInputTypes());
-    this.store.dispatch(ComponentsAPIActions.loadComponents());
-    this.store.dispatch(ComponentsAPIActions.loadComponentTypes());
-
-    this.addComponent$
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        map((component) => ({
-          ...component,
-          id: this.generateId().toString(),
-        })),
-        tap((component: DynamicComponentConfig) =>
-          this.store.dispatch(ComponentsActions.addComponent({component}))
-        )
-      )
-      .subscribe();
+    this.loadDataToStore();
+    this.addComponentSub();
+    this.setInputs();
   }
+
 
   onEditorSubmit(value: any) {
     value.isEdit
@@ -106,16 +80,6 @@ export class AppComponent implements OnInit {
 
   }
 
-  drop(event: CdkDragDrop<string[]>) {
-    // moveItemInArray(this.configArray, event.previousIndex, event.currentIndex);
-    // this.store.dispatch(ControlsActions.setControls({ controls: this.configArray }));
-  }
-
-  sortComponents(positions: any) {
-    // console.log('positions', positions);
-    // this.store.dispatch(ComponentsActions.sortComponents(positions));
-  }
-
   selectComponent(id: string) {
     this.store.dispatch(ComponentsActions.selectComponent({id}));
   }
@@ -128,6 +92,7 @@ export class AppComponent implements OnInit {
     ) {
       this.store.dispatch(ComponentsActions.clearSelectedComponent());
     }
+    this.saveToLocalStorage();
   }
 
   saveComponent(component: DynamicComponentConfig) {
@@ -137,6 +102,7 @@ export class AppComponent implements OnInit {
       })
     );
     this.store.dispatch(ComponentsActions.clearSelectedComponent());
+    this.saveToLocalStorage();
   }
 
   cancelEdit() {
@@ -144,45 +110,75 @@ export class AppComponent implements OnInit {
   }
 
   generateId() {
-    let newId;
     const components = this.store.selectSignal(componentsFeature.selectAll)();
-    // selectSignal(
-    //   componentsFeature.selectComponents
-    // )();
-    console.log('id', components);
 
-    if (components === null || components.length === 0) return (newId = 1);
+    if (components === null || components.length === 0) return 1;
     if (components.length > 1)
-      return (newId =
+      return (
         Math.max(...components.map((component) => Number(component.id))) + 1);
-    return (newId =
+    return (
       (Number(
         components.reduce((a, b) => ((a?.id ?? 0) > (b?.id ?? 0) ? a : b)).id
       ) ?? 0) + 1);
   }
 
   saveToLocalStorage() {
-    this.components$.pipe(
-      take(1),
-      switchMap((components) =>
-        this.storage.set('form', components))
-    ).subscribe();
+    this.localStorageService.saveToLocalStorage();
+  }
+
+  clearLocalStorage() {
+    this.localStorageService.delete();
+    this.store.dispatch(ComponentsAPIActions.loadComponents());
   }
 
 
-  saveOrder(cmps: DynamicComponentConfig[]) {
+  sortComponents(cmps: DynamicComponentConfig[]) {
     const components: DynamicComponentConfig[] = this.updateIndex(cmps);
     this.store.dispatch(ComponentsActions.setComponents({components}));
+    this.saveToLocalStorage();
 
+  }
+
+  private setInputs() {
+    this.inputTypes$ = this.store.select(inputsFeature.selectInputTypes);
+    this.components$ = this.store.select(selectSortedComponents);
+    this.componentTypes$ = this.store.select(componentsFeature.selectComponentTypes);
+    this.selectedComponent$ = this.store.select(
+      componentsFeature.selectSelectedComponent
+    );
+    this.hasComponents$ = this.components$.pipe(map(components => components.length > 0));
+  }
+
+  private addComponentSub() {
+    this.addComponent$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((component) => ({
+          ...component,
+          id: this.generateId().toString(),
+        })),
+        tap((component: DynamicComponentConfig) =>
+          this.store.dispatch(ComponentsActions.addComponent({component}))
+        ),
+        tap(() =>
+          this.localStorageService.saveToLocalStorage()
+        ),
+      )
+      .subscribe();
+  }
+
+  private loadDataToStore() {
+    this.store.dispatch(InputTypesAPIActions.loadInputTypes());
+    this.store.dispatch(ComponentsAPIActions.loadComponents());
+    this.store.dispatch(ComponentsAPIActions.loadComponentTypes());
   }
 
   private updateIndex(componentsCopy: DynamicComponentConfig[]) {
-    const components = componentsCopy.map((component: DynamicComponentConfig) => {
+    return componentsCopy.map((component: DynamicComponentConfig) => {
       const cmpClone = {...component};
       delete cmpClone.component;
       cmpClone.index = componentsCopy.indexOf(component).toString();
       return cmpClone;
     });
-    return components;
   }
 }
