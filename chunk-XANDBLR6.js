@@ -1,0 +1,1 @@
+import{Ab as r,Da as a,Pb as i,Tb as s,zb as o}from"./chunk-43NGX3JL.js";var d=(()=>{let e=class e{};e.\u0275fac=function(n){return new(n||e)},e.\u0275cmp=a({type:e,selectors:[["app-textarea"]],standalone:!0,features:[s],decls:2,vars:0,template:function(n,c){n&1&&(o(0,"p"),i(1,"textarea works!"),r())}});let t=e;return t})();export{d as TextareaComponent};
