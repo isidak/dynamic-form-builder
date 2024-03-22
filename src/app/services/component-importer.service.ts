@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import memo from 'memo-decorator';
-import { delay, from, mergeMap, Observable, of, shareReplay } from 'rxjs';
+import { delay, from, map, mergeMap, Observable, of, shareReplay } from 'rxjs';
 import { ComponentsMap } from '../features/models/components-map';
-import { ComponentTypeNames } from '../features/models/dynamic-component-config';
+import { ComponentTypeNames, DynamicComponentConfig } from '../features/models/dynamic-component-config';
 
 @Injectable({
   providedIn: 'root',
@@ -13,18 +13,30 @@ export class ComponentImporterService {
   }
 
   @memo()
-  importComponentByName(name: string) {
+ mapComponent(name: string) {
     return this.componentsMap.find((type) => type.name === name)?.component;
   }
 
-  getImportedComponent(name: string) {
+
+ importComponentByName(name: string) {
     return this.getComponentTypes().pipe(
       mergeMap((types) => {
         if (!types) return of(null);
-        const componentType = this.importComponentByName(name);
+        const componentType = this.mapComponent(name);
         if (!componentType) return of(null);
         const component = componentType();
         return from(component);
+      })
+    );
+  }
+
+  getImportedComponent(config: DynamicComponentConfig) {
+    return this.importComponentByName(config.name).pipe(
+      map((component) => {
+        return {
+          ...config,
+          component,
+        };
       })
     );
   }

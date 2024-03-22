@@ -25,7 +25,7 @@ export abstract class BaseInput implements OnInit, OnDestroy{
   //       });
   //       return;
   //     }
-      
+
   //     this[key] = value[key];
   //   });
   // }

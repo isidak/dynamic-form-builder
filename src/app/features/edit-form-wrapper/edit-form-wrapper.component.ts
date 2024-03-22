@@ -4,7 +4,6 @@ import { AsyncPipe, JsonPipe, NgComponentOutlet, NgFor, NgIf } from "@angular/co
 import { EditComponentWrapperComponent } from "../edit-component-wrapper/edit-component-wrapper.component";
 import { ReactiveFormsModule } from "@angular/forms";
 import { InputComponent } from "../components/input/input.component";
-import { DynamicComponentRenderedComponent } from "../dynamic-component-rendered/dynamic-component-rendered.component";
 import { FormRendererComponent } from "../form-renderer/form-renderer.component";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
@@ -16,7 +15,6 @@ import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
         DragDropModule,
         InputComponent,
         EditComponentWrapperComponent,
-        DynamicComponentRenderedComponent,
         NgComponentOutlet,
         NgFor,
         JsonPipe,

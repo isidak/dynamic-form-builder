@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DynamicComponentRenderedComponent } from './dynamic-component-rendered.component';
+import { DynamicComponentRendererComponent } from './dynamic-component-renderer.component';
 
 describe('DynamicComponentRenderedComponent', () => {
-  let component: DynamicComponentRenderedComponent;
-  let fixture: ComponentFixture<DynamicComponentRenderedComponent>;
+  let component: DynamicComponentRendererComponent;
+  let fixture: ComponentFixture<DynamicComponentRendererComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DynamicComponentRenderedComponent]
+      imports: [DynamicComponentRendererComponent]
     })
     .compileComponents();
-    
-    fixture = TestBed.createComponent(DynamicComponentRenderedComponent);
+
+    fixture = TestBed.createComponent(DynamicComponentRendererComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

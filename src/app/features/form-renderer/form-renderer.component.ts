@@ -2,9 +2,8 @@ import { AsyncPipe, JsonPipe, NgComponentOutlet, NgFor, NgIf, } from '@angular/c
 import { Component, DestroyRef, EventEmitter, inject, Input, OnInit, Output, } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { combineLatest, distinctUntilChanged, map, mergeMap, Observable, of, tap, } from 'rxjs';
+import { combineLatest, distinctUntilChanged, mergeMap, Observable, of, tap, } from 'rxjs';
 import { InputComponent } from '../components/input/input.component';
-import { DynamicComponentRenderedComponent } from '../dynamic-component-rendered/dynamic-component-rendered.component';
 import { ComponentImporterService } from '../../services/component-importer.service';
 import { DynamicComponentConfig } from '../models/dynamic-component-config';
 
@@ -14,7 +13,6 @@ import { DynamicComponentConfig } from '../models/dynamic-component-config';
   imports: [
     ReactiveFormsModule,
     InputComponent,
-    DynamicComponentRenderedComponent,
     NgComponentOutlet,
     NgFor,
     JsonPipe,
@@ -45,19 +43,6 @@ export class FormRendererComponent implements OnInit {
     (Object.values(this.form.controls) as FormControl[]).forEach((control) => control.markAsTouched());
   }
 
-  importComponent(configs: any) {
-    return this.componentImporterService
-      .getImportedComponent(configs.name)
-      .pipe(
-        map((component) => {
-          return {
-            ...configs,
-            component,
-          };
-        })
-      );
-  }
-
   trackById(index: number, item: any) {
     return item.id;
   }
@@ -80,4 +65,10 @@ export class FormRendererComponent implements OnInit {
       tap((components) => (this.componentsCopy = [...components]))
     );
   }
+
+  private importComponent(configs: any) {
+    return this.componentImporterService
+      .getImportedComponent(configs)
+  }
+
 }
